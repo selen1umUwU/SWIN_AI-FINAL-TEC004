@@ -1,0 +1,25 @@
+# ===== BÍ MẬT — TUYỆT ĐỐI KHÔNG ĐƯA LÊN GITHUB =====
+# Chứa GEMINI_API_KEY, OPENROUTER_API_KEY và DATABASE_URL (mật khẩu Neon).
+.env
+*.env
+!.env.example
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+env/
+
+# ===== Log do scraper sinh ra (chạy lại là có, không cần lưu lịch sử) =====
+*.log
+backend/scraped_data/scraper.log
+
+# ===== Công cụ / hệ điều hành =====
+.claude/settings.local.json
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store

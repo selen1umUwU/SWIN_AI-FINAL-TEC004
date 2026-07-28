@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swinburne Vietnam | AI Admission Consultant</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== TOP UTILITY BAR (like real site) ===== -->
+  <div class="utility-bar">
+    <div class="utility-bar__inner">
+      <a href="#">Cơ sở</a>
+      <a href="#">Sự kiện</a>
+      <a href="#">Tin tức</a>
+      <a href="#">Thư viện</a>
+      <a href="#">Sinh viên hiện tại</a>
+      <a href="#">Cựu sinh viên</a>
+      <span class="utility-bar__lang">EN | <strong>VI</strong></span>
+    </div>
+  </div>
+
+  <!-- ===== HEADER / NAVBAR ===== -->
+  <header class="navbar">
+    <div class="navbar__inner">
+      <a href="#top" class="brand">
+        <img src="assets/logo-swinburne.svg" alt="Swinburne Vietnam" class="brand__logo">
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#programs">Khoá học</a>
+        <a href="#scholarships">Học bổng</a>
+        <a href="#faq">Câu hỏi thường gặp</a>
+        <a href="#chat" class="nav-cta">Tư vấn ngay</a>
+      </nav>
+
+      <div class="navbar__controls">
+        <button id="themeToggle" class="theme-toggle" aria-label="Chuyển chế độ sáng/tối" title="Sáng / Tối">
+          <span class="theme-toggle__icon">◐</span>
+        </button>
+        <button id="menuToggle" class="menu-toggle" aria-label="Mở menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== HERO (ảnh lễ tốt nghiệp thật) ===== -->
+  <section class="hero" id="top">
+    <div class="hero__text">
+      <p class="eyebrow">Hệ thống tư vấn tuyển sinh AI · Vận hành 24/7</p>
+      <h1 class="hero__title">
+        Thắp sáng tương lai<br>
+        <span class="hero__title-accent">cùng Swinburne Việt Nam</span>
+      </h1>
+      <ul class="hero__bullets">
+        <li>Tư vấn tuyển sinh bằng AI, trả lời tức thì mọi lúc</li>
+        <li>Chương trình đại học <strong>TOP 300 thế giới</strong></li>
+      </ul>
+      <div class="hero__actions">
+        <a href="#chat" class="btn btn--primary">Tư vấn ngay</a>
+        <a href="#faq" class="btn btn--ghost">Câu hỏi thường gặp</a>
+      </div>
+    </div>
+    <div class="hero__media">
+      <img src="assets/hero-graduation.jpg" alt="Lễ tốt nghiệp Swinburne Việt Nam">
+    </div>
+  </section>
+
+  <!-- ===== WHY CHOOSE US ===== -->
+  <section class="why-choose">
+    <h2 class="section__title section__title--light">Tại sao lựa chọn Swinburne Việt Nam?</h2>
+    <div class="why-choose__grid">
+      <div class="why-item">
+        <img src="assets/icon-rocket.png" alt="" class="why-item__icon">
+        <p>Nhận bằng từ trường Đại học TOP 300 thế giới (QS 2026)</p>
+      </div>
+      <div class="why-item">
+        <img src="assets/icon-scale.png" alt="" class="why-item__icon">
+        <p>Chất lượng đào tạo kiểm định quốc tế</p>
+      </div>
+      <div class="why-item">
+        <img src="assets/icon-globe.png" alt="" class="why-item__icon">
+        <p>Đào tạo kỹ năng công dân toàn cầu</p>
+      </div>
+      <div class="why-item">
+        <img src="assets/icon-handshake.png" alt="" class="why-item__icon">
+        <p>Kết nối trải nghiệm thực tế, doanh nghiệp</p>
+      </div>
+      <div class="why-item">
+        <img src="assets/icon-briefcase.png" alt="" class="why-item__icon">
+        <p>Cơ hội việc làm tốt trong nước và quốc tế</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== QUICK FAQ SUGGESTIONS ===== -->
+  <section class="quick-faq" id="faq">
+    <h2 class="section__title">Câu hỏi thường gặp</h2>
+    <p class="section__subtitle">Nhấn để hỏi trợ lý AI ngay lập tức</p>
+    <div class="quick-faq__grid" id="quickFaqGrid">
+      <!-- populated by script.js, static fallback below -->
+      <button class="faq-chip" data-question="Học phí các ngành tại Swinburne Việt Nam là bao nhiêu?">
+        <span class="faq-chip__icon">💰</span> Học phí
+      </button>
+      <button class="faq-chip" data-question="Swinburne Việt Nam có những học bổng nào?">
+        <span class="faq-chip__icon">🎓</span> Học bổng
+      </button>
+      <button class="faq-chip" data-question="Điều kiện đầu vào để nhập học Swinburne Việt Nam là gì?">
+        <span class="faq-chip__icon">📋</span> Điều kiện nhập học
+      </button>
+      <button class="faq-chip" data-question="Swinburne Việt Nam có chương trình du học chuyển tiếp không?">
+        <span class="faq-chip__icon">✈️</span> Du học chuyển tiếp
+      </button>
+      <button class="faq-chip" data-question="Swinburne Việt Nam có những ngành học nào?">
+        <span class="faq-chip__icon">📚</span> Ngành học
+      </button>
+      <button class="faq-chip" data-question="Thời gian nộp hồ sơ nhập học là khi nào?">
+        <span class="faq-chip__icon">🗓️</span> Thời hạn hồ sơ
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== PROGRAMS ===== -->
+  <section class="programs" id="programs">
+    <h2 class="section__title">Chương trình đào tạo tại Swinburne Việt Nam</h2>
+    <p class="section__subtitle">Dữ liệu được cập nhật tự động từ swinburne-vn.edu.vn</p>
+    <div class="programs__grid" id="programsGrid">
+      <!-- Populated dynamically from backend/scraped data in the future. Static cards with real photos for now: -->
+      <article class="card card--media">
+        <div class="card__media"><img src="assets/program-teamwork.jpg" alt="Công dân toàn cầu"></div>
+        <div class="card__body">
+          <span class="card__tag">Cử nhân</span>
+          <h3>Công dân Toàn cầu</h3>
+          <p>Chương trình đào tạo tư duy công dân toàn cầu, kỹ năng liên ngành và trải nghiệm quốc tế.</p>
+        </div>
+      </article>
+      <article class="card card--media">
+        <div class="card__media"><img src="assets/event-guest.jpeg" alt="Công nghệ Thông tin"></div>
+        <div class="card__body">
+          <span class="card__tag">Cử nhân</span>
+          <h3>Công nghệ Thông tin</h3>
+          <p>Khoa học máy tính, phần mềm, an ninh mạng và trí tuệ nhân tạo.</p>
+        </div>
+      </article>
+      <article class="card card--media">
+        <div class="card__media"><img src="assets/program-friends.jpg" alt="Kinh doanh"></div>
+        <div class="card__body">
+          <span class="card__tag">Cử nhân</span>
+          <h3>Quản trị Kinh doanh</h3>
+          <p>Marketing, tài chính, quản lý chuỗi cung ứng và khởi nghiệp.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== SCHOLARSHIPS ===== -->
+  <section class="scholarships" id="scholarships">
+    <h2 class="section__title">Học bổng nổi bật</h2>
+    <div class="scholarships__grid" id="scholarshipsGrid">
+      <article class="card card--accent">
+        <h3>Học bổng Tài năng</h3>
+        <p>Lên đến 50% học phí toàn khóa cho học sinh xuất sắc.</p>
+      </article>
+      <article class="card card--accent">
+        <h3>Học bổng Vượt khó</h3>
+        <p>Hỗ trợ tài chính cho sinh viên có hoàn cảnh khó khăn.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== GALLERY (hoạt động sinh viên thật) ===== -->
+  <section class="gallery">
+    <h2 class="section__title">Hoạt động sinh viên</h2>
+    <p class="section__subtitle">Khoảnh khắc từ cộng đồng Swinburne Việt Nam</p>
+    <div class="gallery__grid">
+      <img src="assets/hero-fansipan.jpg" alt="Fansipan Trek 2022" class="gallery__item">
+      <img src="assets/program-amazon.jpg" alt="Tham quan doanh nghiệp Amazon">
+      <img src="assets/program-friends.jpg" alt="Sinh viên Swinburne">
+      <img src="assets/program-teamwork.jpg" alt="Làm việc nhóm quốc tế">
+    </div>
+  </section>
+
+  <!-- ===== FLOATING CHAT WIDGET ===== -->
+  <div class="chat-widget" id="chatWidget">
+    <button class="chat-fab" id="chatFab" aria-label="Mở trợ lý tư vấn AI">
+      <span class="chat-fab__icon">💬</span>
+    </button>
+
+    <div class="chat-panel" id="chatPanel" aria-hidden="true">
+      <header class="chat-panel__header">
+        <div class="chat-panel__title">
+          <span class="chat-panel__dot"></span>
+          Trợ lý tuyển sinh AI
+        </div>
+        <button class="chat-panel__close" id="chatClose" aria-label="Đóng chat">✕</button>
+      </header>
+
+      <div class="chat-panel__messages" id="chatMessages">
+        <div class="msg msg--bot">
+          <p>Xin chào 👋 Mình là trợ lý tuyển sinh AI của Swinburne Việt Nam. Bạn muốn hỏi về học phí, học bổng, ngành học hay điều kiện nhập học?</p>
+        </div>
+      </div>
+
+      <div class="chat-panel__suggestions" id="chatSuggestions">
+        <button class="chip" data-question="Học phí như thế nào?">Học phí?</button>
+        <button class="chip" data-question="Có học bổng gì?">Học bổng?</button>
+        <button class="chip" data-question="Điều kiện nhập học?">Điều kiện nhập học?</button>
+      </div>
+
+      <form class="chat-panel__input" id="chatForm">
+        <input type="text" id="chatInput" placeholder="Nhập câu hỏi của bạn..." autocomplete="off" />
+        <button type="submit" class="chat-send" aria-label="Gửi">➤</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <img src="assets/logo-swinburne.svg" alt="Swinburne Vietnam" class="footer__logo">
+      </div>
+
+      <div class="footer__col">
+        <h4>Swinburne Việt Nam</h4>
+        <a href="#programs">Khoá học</a>
+        <a href="#scholarships">Học bổng</a>
+      </div>
+
+      <div class="footer__col">
+        <h4>Tuyển sinh</h4>
+        <a href="#">Tuyển sinh 2026</a>
+        <a href="#">Thủ tục tuyển sinh</a>
+      </div>
+
+      <div class="footer__col">
+        <h4>Liên hệ</h4>
+        <a href="mailto:swinburne@fe.edu.vn">swinburne@fe.edu.vn</a>
+        <a href="#chat">Tư vấn AI 24/7</a>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <p>© 2026 Swinburne University of Technology Vietnam. Hệ thống tư vấn tuyển sinh AI — Đồ án tốt nghiệp SE25/1.</p>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
