@@ -18,21 +18,16 @@ from dotenv import load_dotenv
 import models
 from database import engine, get_db
 
-# Console Windows mặc định dùng codepage cp1252, không encode được tiếng Việt
-# trong print() -> crash UnicodeEncodeError ngay lúc khởi động. Ép stdout/stderr
-# sang UTF-8 để chạy được trên mọi terminal (Windows/macOS/Linux).
 for stream in (sys.stdout, sys.stderr):
     if hasattr(stream, "reconfigure"):
         stream.reconfigure(encoding="utf-8")
 
 load_dotenv()
 
-# Auto-create the Postgres tables on Neon
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Đường dẫn tuyệt đối tới thư mục frontend (nằm cùng cấp với backend/)
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend")
 
 class ChatRequest(BaseModel):
@@ -40,24 +35,11 @@ class ChatRequest(BaseModel):
     session_id: str
 
 # ---------- LOAD KNOWLEDGE BASE (do scraper.py tạo ra, định dạng JSON) ----------
-# Thay vì nhét TOÀN BỘ scraped_data.json vào mỗi request (dễ vượt giới hạn
-# context của model khi data lớn), ta giữ danh sách trang trong bộ nhớ và với
-# MỖI câu hỏi chỉ lấy ra những ĐOẠN văn liên quan nhất để đưa vào prompt — kỹ
-# thuật "retrieval" đơn giản, chưa cần vector DB/embeddings.
-#
-# Việc chấm điểm được làm ở 2 mức:
-#   1. Mức TRANG  -> chọn ra vài trang khả năng liên quan nhất.
-#   2. Mức ĐOẠN   -> trong các trang đó, chỉ lấy các đoạn thật sự khớp câu hỏi.
-# Nhờ mức 2, một trang có đoạn văn khổng lồ (trang học bổng có 1 dòng ~10.000
-# ký tự) không còn "ăn" hết ngân sách ký tự và làm mất thông tin của trang khác.
-MAX_PAGES_PER_QUERY = 4      # tối đa bao nhiêu trang được xét cho 1 câu trả lời
-MAX_KB_CHARS = 12000         # tổng số ký tự tối đa đưa vào prompt (~4k token)
-MAX_CHUNK_CHARS = 420        # độ dài tối đa của 1 đoạn sau khi cắt nhỏ
-LONG_LINE_CHARS = 600        # dòng dài hơn mức này sẽ bị cắt thành nhiều đoạn
+MAX_PAGES_PER_QUERY = 4
+MAX_KB_CHARS = 12000
+MAX_CHUNK_CHARS = 420
+LONG_LINE_CHARS = 600
 
-# Từ để hỏi / từ nối tiếng Việt — xuất hiện ở mọi trang nên vô nghĩa khi tìm kiếm.
-# (Cẩn thận: không đưa vào đây những từ sau khi bỏ dấu sẽ trùng với từ có nghĩa,
-#  ví dụ "họ" -> "ho" trùng "hồ" trong "hồ sơ", "chị" -> "chi" trùng "chi phí".)
 STOPWORDS = {
     "la", "gi", "co", "cua", "va", "cho", "the", "nao", "bao", "nhieu", "nhung",
     "cac", "tai", "den", "tu", "voi", "khi", "nay", "mot", "ban", "toi",
@@ -67,10 +49,6 @@ STOPWORDS = {
     "len", "xuong", "de", "boi", "theo", "tren", "nguoi", "nhi", "the nao",
 }
 
-# Câu hỏi thường dùng từ dân dã, còn website dùng từ hành chính -> nối 2 bên lại.
-# Khi câu hỏi chứa cụm bên trái, các cụm bên phải cũng được coi là khớp.
-# LƯU Ý: chỉ thêm cụm KHÔNG bị trùng nghĩa sau khi bỏ dấu — "khóa học" và
-# "khoa học" đều thành "khoa hoc" nên tuyệt đối không dùng làm từ đồng nghĩa.
 SYNONYMS = {
     "hoc phi": ["chi phi", "muc hoc phi", "tong hoc phi"],
     "hoc bong": ["scholarship", "muc hoc bong"],
@@ -98,8 +76,8 @@ def normalize(text: str) -> str:
     return _NON_WORD_RE.sub(" ", _strip_accents(text.lower())).strip()
 
 
-BIGRAM_BOOST = 4.0      # cụm 2 từ ("hoc bong") nói lên chủ đề rõ hơn từ đơn ("hoc")
-MAX_TERM_COUNT = 5      # đếm tối đa 5 lần/đoạn để trang dài không tự động thắng
+BIGRAM_BOOST = 4.0
+MAX_TERM_COUNT = 5
 
 
 @lru_cache(maxsize=4096)
@@ -119,22 +97,13 @@ def _weight(pattern: str, is_bigram: bool) -> float:
     return max(idf, 0.02) * (BIGRAM_BOOST if is_bigram else 1.0)
 
 
-# Câu hỏi CŨ cũng được ghép vào truy vấn tìm kiếm, nhưng nhẹ ký hơn hẳn câu
-# hiện tại. Lý do: câu hỏi nối tiếp thường thiếu chủ ngữ ("điều kiện để nhận NÓ
-# là gì?") — nếu chỉ tìm bằng đúng câu đó thì không có từ khoá nào dẫn về trang
-# học bổng Olympia. Ghép câu cũ vào là lấy lại được chủ đề đang nói.
-# Trọng số phải THẤP để khi người dùng đổi chủ đề ("thôi, học phí bao nhiêu?")
-# thì chủ đề cũ không kéo ngược kết quả về trang cũ.
-FOLLOWUP_WEIGHT = 0.35   # câu hỏi ngay trước nặng bằng 35% câu hiện tại
-FOLLOWUP_DECAY = 0.6     # càng lùi xa quá khứ càng nhẹ dần
+FOLLOWUP_WEIGHT = 0.35
+FOLLOWUP_DECAY = 0.6
 
 
 def _extract_patterns(question: str) -> list:
     """Tách 1 câu hỏi thành danh sách (mẫu tìm kiếm, có phải cụm 2 từ không)."""
     words = normalize(question).split()
-    # Chỉ giữ cụm 2 từ mà CẢ HAI từ đều có nghĩa. Nếu không lọc, các cụm từ để
-    # hỏi như "bao nhieu", "the nao" lại hiếm gặp trong dữ liệu -> bị chấm điểm
-    # rất cao và kéo nhầm những trang chẳng liên quan gì lên đầu.
     bigrams = [
         f"{a} {b}" for a, b in zip(words, words[1:])
         if a not in STOPWORDS and b not in STOPWORDS
@@ -162,7 +131,6 @@ def build_query(question: str, prev_questions: tuple = ()) -> list:
     if not prev_questions:
         return list(weights.items())
 
-    # Gom từ khoá của các câu hỏi cũ, câu càng gần hiện tại càng nặng.
     old = {}
     scale = 1.0
     for prev in reversed(prev_questions):
@@ -171,11 +139,6 @@ def build_query(question: str, prev_questions: tuple = ()) -> list:
             old[pattern] = max(old.get(pattern, 0.0), weight)
         scale *= FOLLOWUP_DECAY
 
-    # Chuẩn hoá theo ĐỘ MẠNH của câu hiện tại: tổng trọng số của chủ đề cũ chỉ
-    # được bằng FOLLOWUP_WEIGHT lần tổng trọng số câu đang hỏi.
-    # Không làm bước này thì gặp câu hỏi hiện tại "yếu" (ít từ khoá đặc trưng,
-    # vd "Trường có mấy cơ sở?") chủ đề cũ sẽ nặng hơn cả câu đang hỏi và kéo
-    # ngược kết quả về trang cũ — đã gặp thật khi test.
     current_total = sum(weights.values())
     old_total = sum(old.values())
     if current_total <= 0 or old_total <= 0:
@@ -183,8 +146,6 @@ def build_query(question: str, prev_questions: tuple = ()) -> list:
 
     factor = min(1.0, FOLLOWUP_WEIGHT * current_total / old_total)
     for pattern, weight in old.items():
-        # Từ nào có ở cả câu mới lẫn câu cũ thì giữ trọng số cao nhất, tức là
-        # ưu tiên vai trò của nó trong câu hỏi hiện tại.
         weights[pattern] = max(weights.get(pattern, 0.0), weight * factor)
 
     return list(weights.items())
@@ -231,7 +192,7 @@ def _split_long_line(line: str) -> list:
             continue
         if buffer:
             chunks.append(buffer)
-        while len(sentence) > MAX_CHUNK_CHARS:   # 1 câu dài bất thường
+        while len(sentence) > MAX_CHUNK_CHARS:
             chunks.append(sentence[:MAX_CHUNK_CHARS])
             sentence = sentence[MAX_CHUNK_CHARS:]
         buffer = sentence
@@ -315,13 +276,9 @@ AVG_CHUNK_LEN = (sum(_ALL_CHUNK_LENS) / len(_ALL_CHUNK_LENS)) if _ALL_CHUNK_LENS
 print(f"[INFO] Đã nạp {len(ALL_PAGES)} trang từ scraped_data.json vào bộ nhớ.")
 
 
-TITLE_BOOST = 6.0       # chủ đề nằm ngay trên tiêu đề trang thì gần như chắc đúng
-PAGE_K1, PAGE_B = 1.5, 0.75     # tham số BM25 khi xếp hạng TRANG
-CHUNK_K1, CHUNK_B = 1.2, 0.85   # tham số BM25 khi xếp hạng ĐOẠN
-# CHUNK_B cao (phạt đoạn dài mạnh) là cố ý: các dòng quan trọng nhất của trường
-# thường rất ngắn ("Học bổng Pioneer: Giá trị 125-150 triệu VND"), còn đoạn dài
-# hay là văn giới thiệu lặp đi lặp lại tên trường — để b thấp thì mấy đoạn dài
-# đó chiếm hết chỗ và câu trả lời sót mất vài loại học bổng.
+TITLE_BOOST = 6.0
+PAGE_K1, PAGE_B = 1.5, 0.75
+CHUNK_K1, CHUNK_B = 1.2, 0.85
 
 
 def retrieve_relevant_pages(question: str, pages: list = None,
@@ -334,8 +291,6 @@ def retrieve_relevant_pages(question: str, pages: list = None,
     for page in pages:
         score = _score_bm25(page["norm_text"], page["length"], query,
                             AVG_PAGE_LEN, PAGE_K1, PAGE_B)
-        # Trang có ĐÚNG chủ đề nằm ngay trên tiêu đề ("Quy định học phí",
-        # "Học bổng Swinburne Vietnam 2026") gần như luôn là trang cần tìm.
         score += TITLE_BOOST * _score_text(page["norm_title"], query)
         if score > 0:
             scored.append((score, page))
@@ -344,34 +299,16 @@ def retrieve_relevant_pages(question: str, pages: list = None,
     relevant = [page for _, page in scored[:MAX_PAGES_PER_QUERY]]
 
     if not relevant:
-        # Không khớp gì -> lấy tạm vài trang đầu để AI vẫn có chút ngữ cảnh chung.
         relevant = pages[:MAX_PAGES_PER_QUERY]
 
     return relevant
 
 
-# Mỗi trang trong top được chia sẵn 1 phần ngân sách ký tự theo thứ hạng. Nếu
-# gộp chung 1 ngân sách rồi lấy theo điểm, trang hạng 1 dễ "ăn" sạch chỗ và câu
-# trả lời mất luôn thông tin của trang hạng 2 (vd: hỏi "học phí các ngành" thì
-# trang Ngành đào tạo chiếm hết, mất con số 575.000.000 của trang Quy định học phí).
 PAGE_BUDGET_SHARES = [0.45, 0.25, 0.18, 0.12]
 
-# Khi chọn được 1 đoạn, lấy kèm các đoạn liền kề nó.
-# Lý do: dữ liệu của trường viết theo kiểu "tiêu đề rồi tới danh sách gạch đầu
-# dòng" — vd "Học bổng Talent: 225–250 triệu" rồi mới tới "điểm từ 9.0 trở lên",
-# "IELTS 7.0". Các dòng điều kiện KHÔNG nhắc lại tên học bổng, nên nếu chỉ nhặt
-# lẻ từng đoạn rời rạc thì điều kiện của học bổng này dễ nằm cạnh tiêu đề của
-# học bổng kia và AI ghép nhầm (đã gặp thật: Talent bị gán nhầm điều kiện 8.5
-# và IELTS 6.0 của NextGen). Lấy kèm hàng xóm giúp giữ nguyên cụm thông tin.
-CONTEXT_BEFORE = 1      # số đoạn liền trước lấy kèm
-CONTEXT_AFTER = 3       # số đoạn liền sau lấy kèm (danh sách điều kiện thường dài)
+CONTEXT_BEFORE = 1
+CONTEXT_AFTER = 3
 
-# Ngân sách của mỗi trang được tiêu theo 2 lượt:
-#   Lượt 1 (BREADTH_SHARE) — chỉ lấy các đoạn TRỰC TIẾP khớp câu hỏi, để câu
-#     kiểu "có những học bổng nào?" gom đủ cả 7 loại học bổng.
-#   Lượt 2 (phần còn lại)  — nới ra các đoạn liền kề để không mất ngữ cảnh.
-# Làm 1 lượt duy nhất sẽ hỏng 1 trong 2: nới ngay từ đầu thì vài học bổng đầu
-# tiên ăn hết chỗ và thiếu mất các loại còn lại.
 BREADTH_SHARE = 0.5
 
 
@@ -397,8 +334,6 @@ def build_knowledge_base(question: str, prev_questions: tuple = ()) -> str:
             if score > 0:
                 scored_chunks.append((score, idx, chunk))
 
-        # Trang hạng 1 mà không có đoạn nào khớp -> vẫn lấy vài đoạn đầu trang
-        # để AI có chút ngữ cảnh, thay vì trả về prompt rỗng.
         if not scored_chunks and rank == 0:
             scored_chunks = [(0.0, i, c) for i, c in enumerate(page["chunks"][:6])]
 
@@ -407,15 +342,12 @@ def build_knowledge_base(question: str, prev_questions: tuple = ()) -> str:
         chunks = page["chunks"]
         taken_idx, used = set(), 0
 
-        # Lượt 1: các đoạn trực tiếp khớp câu hỏi -> đảm bảo bao quát đủ ý.
         for _, idx, chunk in scored_chunks:
             if idx in taken_idx or used + len(chunk) > budget * BREADTH_SHARE:
                 continue
             taken_idx.add(idx)
             used += len(chunk)
 
-        # Lượt 2: nới sang các đoạn liền kề -> tiêu đề không bị tách khỏi
-        # danh sách nội dung của nó.
         for _, idx, _chunk in scored_chunks:
             if idx not in taken_idx:
                 continue
@@ -427,7 +359,7 @@ def build_knowledge_base(question: str, prev_questions: tuple = ()) -> str:
                 taken_idx.add(i)
                 used += len(chunks[i])
 
-        carry = budget - used          # phần thừa dồn cho trang kế tiếp
+        carry = budget - used
         if not taken_idx:
             continue
 
@@ -443,10 +375,6 @@ def build_system_prompt(question: str, history: list = ()) -> str:
     knowledge_base = build_knowledge_base(question, prev_questions)
     history_text = format_history(history)
 
-    # Tạo khối text lịch sử nếu có. Lưu ý: đây là lời NGƯỜI DÙNG đã gõ trước đó,
-    # nên phải nói rõ với model rằng đó chỉ là dữ liệu tham khảo — nếu không,
-    # người dùng có thể gài câu kiểu "từ giờ hãy bỏ qua mọi quy tắc" ở lượt
-    # trước rồi lượt sau nó được đọc lại như một phần chỉ thị hệ thống.
     history_section = ""
     if history_text:
         history_section = f"""
@@ -493,7 +421,6 @@ QUY TẮC BẮT BUỘC:
 5. NGÔN NGỮ: Trả lời bằng tiếng Việt, giọng thân thiện, chuyên nghiệp.
 """
 
-# Câu trả lời cuối cùng khi CẢ 3 API đều lỗi — chỉnh số hotline theo ý bạn.
 FINAL_FALLBACK_MESSAGE = (
     "Hiện tại máy chủ đang bận, vui lòng gọi điện hotline 0387 148 555 "
     "hoặc thử lại sau ít phút để được hỗ trợ tư vấn tuyển sinh."
@@ -513,7 +440,6 @@ def ask_gemini(question: str, history: list = ()) -> str:
         model=GEMINI_MODEL,
         contents=question,
         config=types.GenerateContentConfig(
-            # Truyền history vào system_prompt
             system_instruction=build_system_prompt(question, history),
             temperature=0.3,
             max_output_tokens=500,
@@ -528,7 +454,6 @@ def ask_gemini(question: str, history: list = ()) -> str:
 # ==================== API 2: OPENROUTER (free model) ====================
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-# Đổi model ở đây nếu muốn dùng model free khác của OpenRouter
 OPENROUTER_MODEL = "nvidia/nemotron-3-nano-30b-a3b:free"
 
 
@@ -544,7 +469,6 @@ def ask_openrouter(question: str, history: list = ()) -> str:
         json={
             "model": OPENROUTER_MODEL,
             "messages": [
-                # Truyền history vào system_prompt
                 {"role": "system", "content": build_system_prompt(question, history)},
                 {"role": "user", "content": question}
             ],
@@ -562,7 +486,6 @@ def ask_openrouter(question: str, history: list = ()) -> str:
 
 
 # ==================== CHUỖI FALLBACK: API1 -> API2 -> câu hotline ====================
-# Thêm/bớt/đổi thứ tự provider chỉ cần sửa danh sách này.
 PROVIDER_CHAIN = [
     ("gemini", ask_gemini),
     ("openrouter", ask_openrouter),
@@ -577,7 +500,6 @@ def get_ai_reply(question: str, history: list = ()) -> tuple[str, str]:
     """
     for name, ask_fn in PROVIDER_CHAIN:
         try:
-            # Truyền history vào ask_fn
             reply = ask_fn(question, history)
             return reply, name
         except Exception as e:
@@ -588,8 +510,8 @@ def get_ai_reply(question: str, history: list = ()) -> tuple[str, str]:
     return FINAL_FALLBACK_MESSAGE, "none"
 
 
-HISTORY_TURNS = 3            # số lượt hỏi-đáp gần nhất được nhớ
-HISTORY_MSG_CHARS = 400      # cắt bớt mỗi tin nhắn quá dài trước khi đưa vào prompt
+HISTORY_TURNS = 3
+HISTORY_MSG_CHARS = 400
 
 
 def load_history(db: Session, session_id: str) -> list:
@@ -616,7 +538,6 @@ def load_history(db: Session, session_id: str) -> list:
         print(f"[WARN] Không đọc được lịch sử chat từ DB: {e}")
         return []
 
-    # Lật ngược lại cho đúng thứ tự thời gian (từ cũ đến mới)
     records.reverse()
     return [(item.user_message or "", item.bot_response or "") for item in records]
 
@@ -635,9 +556,6 @@ def chat_endpoint(req: ChatRequest, db: Session = Depends(get_db)):
     history = load_history(db, req.session_id)
     bot_reply, used_provider = get_ai_reply(req.question, history)
 
-    # Lưu lịch sử vào Neon PostgreSQL. Việc này chỉ là phụ — nếu DB lỗi/chậm thì
-    # vẫn PHẢI trả câu trả lời AI cho người dùng, không được để sự cố DB làm treo
-    # hoặc chặn cả chatbot.
     try:
         new_chat = models.ChatHistory(
             session_id=req.session_id,
@@ -654,22 +572,14 @@ def chat_endpoint(req: ChatRequest, db: Session = Depends(get_db)):
 
 
 # ==================== API HIỂN THỊ NỘI DUNG ĐỘNG CHO FRONTEND ====================
-# Cho phép các section trên trang (học bổng, ngành học...) tự điền nội dung từ
-# scraped_data.json. Mỗi lần chạy scraper + khởi động lại server, nội dung này tự
-# cập nhật theo.
-#
-# Frontend cần thứ hiển thị lên CARD được, nên ở đây ta bóc ra danh sách
-# {title, value, desc} — tức là TÊN từng học bổng / từng ngành học kèm 1 câu mô
-# tả ngắn — thay vì đổ nguyên đoạn văn thô của trang lên giao diện.
 
-# Các dòng menu/điều hướng lặp trên hầu hết trang -> bỏ khi hiển thị lên UI.
 _NAV_NOISE_NORM = {
     "dang ky nhap hoc", "hoc bong swinburne vietnam 2026",
     "thong bao tuyen sinh 2026", "thu tuc tuyen sinh", "gioi thieu chung",
     "dang ky tim hieu", "lien he voi chung toi",
 }
 
-MAX_DESC_CHARS = 200          # mô tả dài hơn sẽ được cắt gọn cho vừa card
+MAX_DESC_CHARS = 200
 
 
 def _shorten(text: str, limit: int = MAX_DESC_CHARS) -> str:
@@ -703,20 +613,15 @@ def extract_scholarships(page: dict) -> list:
         if not norm.startswith("hoc bong") or len(line) > 300:
             continue
 
-        # "Giá trị/trị giá" phải nằm ngay đầu dòng thì mới là dòng tiêu đề học
-        # bổng. Nếu ở giữa 1 đoạn văn dài thì đó chỉ là câu văn bình thường
-        # (vd: "...không có giá trị chuyển đổi sang cơ sở mới").
         head = norm[:80]
         has_value = "gia tri" in head or "tri gia" in head
         next_norm = normalize(lines[i + 1]) if i + 1 < len(lines) else ""
         if not has_value and "dieu kien ho so" not in next_norm:
-            continue          # chỉ là 1 câu văn nhắc tới học bổng, không phải mục
+            continue
 
         title, _, after_colon = line.partition(":")
         title, after_colon = title.strip(), after_colon.strip()
 
-        # Phần sau dấu ":" hoặc là giá trị học bổng ("Giá trị 50-100 triệu VND"),
-        # hoặc đã là mô tả luôn (trường hợp học bổng FPT Talent).
         value, desc = "", ""
         after_norm = normalize(after_colon)
         if after_colon and len(after_colon) < 80 and ("gia tri" in after_norm or "tri gia" in after_norm):
@@ -724,7 +629,7 @@ def extract_scholarships(page: dict) -> list:
         elif len(after_colon) >= 40:
             desc = after_colon
 
-        if not desc:                    # lấy dòng điều kiện đầu tiên làm mô tả
+        if not desc:
             for nxt in lines[i + 1:i + 6]:
                 candidate = nxt.lstrip("–-—").strip()
                 if len(candidate) >= 40 and not normalize(candidate).startswith("hoc bong"):
@@ -754,8 +659,6 @@ def extract_programs() -> tuple:
         title = page.get("title", "").strip()
         lines = [l.strip() for l in page.get("content", [])]
 
-        # Bỏ qua phần đầu trang (lời chứng thực sinh viên, dòng lặp lại tiêu đề)
-        # rồi lấy câu giới thiệu đầu tiên đủ dài.
         start = 0
         for i, line in enumerate(lines):
             if normalize(line) == normalize(title):
@@ -791,7 +694,6 @@ def extract_generic(page: dict, keywords: list) -> list:
     return items
 
 
-# Mỗi "section" trên frontend ứng với 1 câu truy vấn để dò trang liên quan nhất.
 SECTION_QUERIES = {
     "scholarships": ("học bổng Swinburne Vietnam", "hoc bong", ["hoc bong"]),
     "tuition": ("quy định học phí", "hoc phi", ["hoc phi"]),
@@ -830,6 +732,4 @@ def section_endpoint(topic: str):
     }
 
 
-# LƯU Ý: mount static ("/") PHẢI đặt CUỐI CÙNG, sau tất cả route API ở trên,
-# nếu không nó sẽ "nuốt" hết mọi request và các endpoint /chat, /api/... sẽ hỏng.
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

@@ -33,8 +33,6 @@ from urllib.parse import urljoin, urlparse
 import requests
 from bs4 import BeautifulSoup
 
-# Console Windows mặc định dùng cp1252, không in được tiếng Việt -> crash
-# UnicodeEncodeError. Ép stdout/stderr sang UTF-8 để log chạy được mọi nơi.
 for _stream in (sys.stdout, sys.stderr):
     if hasattr(_stream, "reconfigure"):
         _stream.reconfigure(encoding="utf-8")
@@ -43,10 +41,6 @@ for _stream in (sys.stdout, sys.stderr):
 DOMAIN = "swinburne-vn.edu.vn"
 START_URL = f"https://{DOMAIN}/"
 
-# URL "mồi": các trang hữu ích cho tư vấn tuyển sinh nhưng KHÔNG được trang nào
-# link tới trong HTML tĩnh (chỉ liên kết qua JavaScript / bị mồ côi khỏi menu),
-# nên crawler thường bỏ sót. Đưa thẳng vào hàng đợi để chắc chắn được cào.
-# Thêm URL mới vào đây nếu phát hiện trang quan trọng bị thiếu.
 SEED_URLS = [
     START_URL,
     "https://swinburne-vn.edu.vn/research/dich-vu-ket-noi-phu-huynh-parents-engagement/",
@@ -60,31 +54,22 @@ HEADERS = {
     )
 }
 
-MAX_PAGES = 150         # giới hạn số trang crawl (tăng từ 80 -> 150 để với tới
-                        # các trang nội dung sâu như /research/... vốn bị bỏ sót)
-REQUEST_DELAY = 0.8     # giây nghỉ giữa mỗi request, lịch sự với server
+MAX_PAGES = 150
+REQUEST_DELAY = 0.8
 REQUEST_TIMEOUT = 15
 
-# Bỏ qua các link trỏ tới file không phải trang HTML
 SKIP_EXTENSIONS = (
     ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp",
     ".zip", ".rar", ".mp4", ".mp3", ".doc", ".docx", ".xls", ".xlsx",
 )
 
-# Bỏ qua hẳn (không crawl) các mục KHÔNG phục vụ tư vấn tuyển sinh: tin tức,
-# sự kiện, thư viện ảnh, trang tag/tác giả/chuyên mục, phân trang, RSS...
-# Vừa tránh nhiễu knowledge base, vừa tiết kiệm budget crawl cho trang hữu ích.
 SKIP_URL_PATTERNS = (
     "/event/", "/tin-tuc/", "/thu-vien/", "/tag/", "/author/",
     "/category/", "/feed/", "/page/", "/wp-json/", "/wp-content/",
 )
 
-# Trang có ít hơn ngưỡng này số dòng nội dung sạch -> coi là trang "stub" rỗng
-# (vd trang liệt kê chỉ có tiêu đề), loại khỏi kết quả cuối để KB gọn & sạch.
 MIN_CONTENT_LINES = 4
 
-# Một đoạn text bị lặp lại trên >= tỉ lệ này của số trang đã crawl
-# thì coi là "rác" boilerplate (menu/footer/banner) và loại bỏ khỏi knowledge base
 BOILERPLATE_THRESHOLD = 0.35
 
 OUTPUT_DIR = Path("scraped_data")
@@ -121,11 +106,11 @@ def is_internal_html_link(url: str) -> bool:
     if parsed.netloc and DOMAIN not in parsed.netloc:
         return False
     if parsed.scheme not in ("", "http", "https"):
-        return False  # bỏ mailto:, tel:, javascript:...
+        return False
     if any(parsed.path.lower().endswith(ext) for ext in SKIP_EXTENSIONS):
         return False
     if any(pat in parsed.path.lower() for pat in SKIP_URL_PATTERNS):
-        return False  # bỏ mục tin tức/sự kiện/tag... không phục vụ tuyển sinh
+        return False
     return True
 
 
@@ -136,7 +121,7 @@ def extract_links(soup: BeautifulSoup, base_url: str) -> list:
         if not href or href.startswith("#"):
             continue
         full_url = urljoin(base_url, href)
-        full_url = full_url.split("#")[0]  # bỏ anchor (#section)
+        full_url = full_url.split("#")[0]
         if is_internal_html_link(full_url):
             links.append(full_url)
     return links
@@ -163,8 +148,6 @@ def parse_page(url: str, soup: BeautifulSoup) -> dict:
     title_tag = soup.select_one("h1")
     title = clean_text(title_tag.get_text()) if title_tag else url
 
-    # Ưu tiên lấy nội dung trong vùng chính (article/main/entry-content) nếu có,
-    # để giảm bớt việc dính phải sidebar/nav ngay từ đầu.
     scope = soup.select_one("article, main, .entry-content") or soup
 
     raw_blocks = [el.get_text() for el in scope.select("p, li, h2, h3")]
@@ -176,8 +159,6 @@ def parse_page(url: str, soup: BeautifulSoup) -> dict:
 # ---------- CRAWL TOÀN SITE (BFS) ----------
 def crawl_site() -> list:
     visited = set()
-    # Nạp toàn bộ URL mồi vào hàng đợi trước, đảm bảo các trang quan trọng luôn
-    # được cào dù không có trang nào link tới chúng.
     queue = deque(SEED_URLS)
     pages = []
 
@@ -196,7 +177,6 @@ def crawl_site() -> list:
         if page_data["content"]:
             pages.append(page_data)
 
-        # Tìm thêm link mới để crawl tiếp (loang dần ra toàn site)
         for link in extract_links(soup, url):
             if link not in visited and link not in queue:
                 queue.append(link)
@@ -220,7 +200,7 @@ def remove_boilerplate(pages: list) -> list:
 
     counter = Counter()
     for page in pages:
-        for line in set(page["content"]):  # set() để đếm 1 lần / trang
+        for line in set(page["content"]):
             counter[line] += 1
 
     boilerplate = {
@@ -280,8 +260,6 @@ def scrape_swinburne_data():
     pages = crawl_site()
     pages = remove_boilerplate(pages)
 
-    # Loại các trang stub quá ít nội dung (trang liệt kê chỉ có tiêu đề, trang
-    # rỗng...) -> KB gọn hơn, retrieval không chọn nhầm trang vô nghĩa.
     before = len(pages)
     pages = [p for p in pages if len(p["content"]) >= MIN_CONTENT_LINES]
     log(f"Loại {before - len(pages)} trang stub (< {MIN_CONTENT_LINES} dòng nội dung).")

@@ -12,14 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initDynamicSections();
 });
 
-/* ---------- 0a. SONG NGỮ VIỆT / ANH ----------
-   Toàn bộ chữ cố định trên trang được gắn data-i18n="khoá" trong index.html;
-   ở đây chỉ việc tra bảng dịch rồi ghi đè. Ngôn ngữ chọn xong được nhớ trong
-   localStorage nên tải lại trang vẫn giữ nguyên.
-
-   LƯU Ý: nội dung các card học bổng / ngành học lấy tự động từ website trường
-   (vốn chỉ có tiếng Việt) nên phần đó vẫn hiển thị tiếng Việt. Chatbot cũng
-   luôn trả lời tiếng Việt — đúng như yêu cầu. */
+/* ---------- 0a. SONG NGỮ VIỆT / ANH ---------- */
 const TRANSLATIONS = {
   vi: {
     "html.lang": "vi",
@@ -155,7 +148,6 @@ const TRANSLATIONS = {
 
 let currentLang = "vi";
 
-/** Dịch 1 khoá sang ngôn ngữ đang chọn (không có thì trả lại chính khoá đó). */
 function t(key) {
   return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) || key;
 }
@@ -174,12 +166,10 @@ function applyLanguage(lang) {
   localStorage.setItem("swin-lang", currentLang);
   document.documentElement.setAttribute("lang", t("html.lang"));
 
-  // Chữ thuần: an toàn nhất, dùng cho hầu hết phần tử.
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     el.textContent = t(el.dataset.i18n);
   });
-  // Vài chỗ cần thẻ <strong> bên trong. Chuỗi dịch nằm ngay trong file này
-  // (không phải dữ liệu người dùng nhập) nên gán innerHTML là an toàn.
+
   document.querySelectorAll("[data-i18n-html]").forEach((el) => {
     el.innerHTML = t(el.dataset.i18nHtml);
   });
@@ -196,10 +186,8 @@ function applyLanguage(lang) {
     el.setAttribute("alt", t(el.dataset.i18nAlt));
   });
 
-  // Dòng ghi nguồn có kèm link -> dựng lại theo ngôn ngữ mới.
   document.querySelectorAll(".section__source[data-url]").forEach(renderSourceNote);
 
-  // Đánh dấu nút ngôn ngữ đang bật
   document.querySelectorAll("#langSwitch .lang-btn").forEach((btn) => {
     btn.classList.toggle("is-active", btn.dataset.lang === currentLang);
   });
@@ -210,17 +198,11 @@ function renderSourceNote(note) {
     `${t("source.prefix")} <a href="${note.dataset.url}" target="_blank" rel="noopener">${t("source.link")}</a>`;
 }
 
-/* ---------- 0. NỘI DUNG ĐỘNG TỪ scraped_data.json ----------
-   Tự điền nội dung các section (học bổng, ngành học) từ backend
-   /api/section/<topic>. Backend trả về danh sách {title, value, desc} — tức là
-   TÊN từng học bổng / từng ngành lấy từ dữ liệu scrape được, kèm 1 câu mô tả
-   ngắn — nên card hiển thị gọn gàng chứ không đổ nguyên đoạn văn thô lên trang.
-   Mỗi lần chạy lại scraper + khởi động server, nội dung này tự cập nhật.
-   Nếu backend lỗi hoặc không có dữ liệu -> giữ nguyên card cứng có sẵn (fallback). */
+/* ---------- 0. NỘI DUNG ĐỘNG TỪ scraped_data.json ---------- */
 function initDynamicSections() {
-  // Card ngành học có ảnh -> chỉ thay CHỮ, giữ nguyên ảnh sẵn có trong assets/.
+
   fillSectionFromApi("programs", "programsGrid", { keepMedia: true });
-  // Card học bổng vốn không có ảnh -> dựng lại hoàn toàn từ dữ liệu.
+
   fillSectionFromApi("scholarships", "scholarshipsGrid", { keepMedia: false });
 }
 
@@ -229,10 +211,10 @@ async function fillSectionFromApi(topic, gridId, { keepMedia }) {
   if (!grid) return;
   try {
     const res = await fetch(`/api/section/${topic}`);
-    if (!res.ok) return; // giữ nội dung cứng làm fallback
+    if (!res.ok) return;
     const data = await res.json();
     const items = (data.items || []).filter((it) => it.title || it.desc);
-    if (items.length === 0) return; // không có dữ liệu -> giữ fallback
+    if (items.length === 0) return;
 
     if (keepMedia) {
       updateMediaCards(grid, items);
@@ -240,26 +222,21 @@ async function fillSectionFromApi(topic, gridId, { keepMedia }) {
       renderTextCards(grid, items);
     }
 
-    // Ghi rõ nguồn để người dùng biết đây là dữ liệu cập nhật tự động từ web trường
     if (data.url) {
       const note = document.createElement("p");
       note.className = "section__source";
-      note.dataset.url = data.url;   // để đổi ngôn ngữ còn dựng lại được
+      note.dataset.url = data.url;
       renderSourceNote(note);
       grid.appendChild(note);
     }
 
-    // Card vừa dựng lại có thể chứa phần tử cần dịch (vd: nhãn "Cử nhân").
     applyLanguage(currentLang);
   } catch (err) {
     console.error(`Không tải được nội dung động cho '${topic}':`, err);
-    // Lỗi mạng -> giữ nguyên card cứng, không làm gì thêm
+
   }
 }
 
-/* Card CÓ ảnh: giữ nguyên thẻ <img> của card cứng, chỉ ghi đè tiêu đề + mô tả.
-   Nếu dữ liệu có nhiều mục hơn số card sẵn có thì nhân bản card và dùng lại
-   lần lượt các ảnh đang có — không bao giờ tự bịa đường dẫn ảnh mới (sẽ vỡ ảnh). */
 function updateMediaCards(grid, items) {
   const templates = Array.from(grid.querySelectorAll(".card"));
   if (templates.length === 0) return;
@@ -279,7 +256,6 @@ function updateMediaCards(grid, items) {
   grid.replaceChildren(...cards);
 }
 
-/* Card KHÔNG có ảnh (học bổng): dựng mới từ tên học bổng + giá trị + mô tả. */
 function renderTextCards(grid, items) {
   const cards = items.map((item) => {
     const card = document.createElement("article");
@@ -313,7 +289,6 @@ function initTheme() {
   const toggleBtn = document.getElementById("themeToggle");
   const icon = toggleBtn.querySelector(".theme-toggle__icon");
 
-  // Load saved preference, default to dark (Swinburne red-black)
   const saved = localStorage.getItem("swin-theme") || "dark";
   root.setAttribute("data-theme", saved);
   updateIcon(saved);
@@ -340,7 +315,6 @@ function initMobileMenu() {
     navLinks.classList.toggle("open");
   });
 
-  // Close menu when a link is clicked
   navLinks.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", () => navLinks.classList.remove("open"));
   });
@@ -393,8 +367,7 @@ function initChatWidget() {
   }
 
   async function sendMessage(question) {
-    // Ẩn hẳn toàn bộ nút gợi ý ngay khi người dùng gửi câu hỏi đầu tiên
-    // (dù bấm chip gợi ý hay tự gõ), không hiện lại nữa.
+
     suggestions.style.display = "none";
 
     addMessage(question, "user");
@@ -410,7 +383,6 @@ function initChatWidget() {
     }
   }
 
-  // Gọi backend FastAPI thật (/chat) — đã kết nối Gemini + Beeknoee fallback.
   async function fetchAIReply(question) {
     const res = await fetch("/chat", {
       method: "POST",
@@ -444,10 +416,7 @@ function initFaqChips() {
 }
 
 /* ---------- 6. ANY "#chat" LINK -> OPEN CHAT PANEL ---------- */
-// href="#chat" trỏ tới 1 id không tồn tại trên trang (widget thật có
-// id="chatWidget"), nên trình duyệt không làm gì cả. Thay vào đó, mọi link
-// trỏ tới "#chat" (nút "Tư vấn ngay" ở navbar, hero, footer...) sẽ mở
-// trực tiếp ô chat bằng JS.
+
 function initChatLinks() {
   const panel = document.getElementById("chatPanel");
   const input = document.getElementById("chatInput");
