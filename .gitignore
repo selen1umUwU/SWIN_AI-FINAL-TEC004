@@ -16,6 +16,9 @@ env/
 *.log
 backend/scraped_data/scraper.log
 
+# ===== Kết quả đo (sinh lại được bằng eval/evaluate.py, không cần lưu lịch sử) =====
+eval/results/
+
 # ===== Công cụ / hệ điều hành =====
 .claude/settings.local.json
 .vscode/
