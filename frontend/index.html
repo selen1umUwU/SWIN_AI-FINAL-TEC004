@@ -11,13 +11,17 @@
   <!-- ===== TOP UTILITY BAR (like real site) ===== -->
   <div class="utility-bar">
     <div class="utility-bar__inner">
-      <a href="#">Cơ sở</a>
-      <a href="#">Sự kiện</a>
-      <a href="#">Tin tức</a>
-      <a href="#">Thư viện</a>
-      <a href="#">Sinh viên hiện tại</a>
-      <a href="#">Cựu sinh viên</a>
-      <span class="utility-bar__lang">EN | <strong>VI</strong></span>
+      <a href="#" data-i18n="util.campus">Cơ sở</a>
+      <a href="#" data-i18n="util.events">Sự kiện</a>
+      <a href="#" data-i18n="util.news">Tin tức</a>
+      <a href="#" data-i18n="util.library">Thư viện</a>
+      <a href="#" data-i18n="util.current">Sinh viên hiện tại</a>
+      <a href="#" data-i18n="util.alumni">Cựu sinh viên</a>
+      <span class="utility-bar__lang" id="langSwitch">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <span class="lang-sep">|</span>
+        <button type="button" class="lang-btn" data-lang="vi">VI</button>
+      </span>
     </div>
   </div>
 
@@ -29,17 +33,19 @@
       </a>
 
       <nav class="nav-links" id="navLinks">
-        <a href="#programs">Khoá học</a>
-        <a href="#scholarships">Học bổng</a>
-        <a href="#faq">Câu hỏi thường gặp</a>
-        <a href="#chat" class="nav-cta">Tư vấn ngay</a>
+        <a href="#programs" data-i18n="nav.programs">Khoá học</a>
+        <a href="#scholarships" data-i18n="nav.scholarships">Học bổng</a>
+        <a href="#faq" data-i18n="nav.faq">Câu hỏi thường gặp</a>
+        <a href="#chat" class="nav-cta" data-i18n="nav.cta">Tư vấn ngay</a>
       </nav>
 
       <div class="navbar__controls">
-        <button id="themeToggle" class="theme-toggle" aria-label="Chuyển chế độ sáng/tối" title="Sáng / Tối">
+        <button id="themeToggle" class="theme-toggle"
+                data-i18n-aria="theme.aria" data-i18n-title="theme.title"
+                aria-label="Chuyển chế độ sáng/tối" title="Sáng / Tối">
           <span class="theme-toggle__icon">◐</span>
         </button>
-        <button id="menuToggle" class="menu-toggle" aria-label="Mở menu">
+        <button id="menuToggle" class="menu-toggle" data-i18n-aria="menu.aria" aria-label="Mở menu">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -49,107 +55,126 @@
   <!-- ===== HERO (ảnh lễ tốt nghiệp thật) ===== -->
   <section class="hero" id="top">
     <div class="hero__text">
-      <p class="eyebrow">Hệ thống tư vấn tuyển sinh AI · Vận hành 24/7</p>
+      <p class="eyebrow" data-i18n="hero.eyebrow">Hệ thống tư vấn tuyển sinh AI · Vận hành 24/7</p>
       <h1 class="hero__title">
-        Thắp sáng tương lai<br>
-        <span class="hero__title-accent">cùng Swinburne Việt Nam</span>
+        <span data-i18n="hero.title1">Thắp sáng tương lai</span><br>
+        <span class="hero__title-accent" data-i18n="hero.title2">cùng Swinburne Việt Nam</span>
       </h1>
       <ul class="hero__bullets">
-        <li>Tư vấn tuyển sinh bằng AI, trả lời tức thì mọi lúc</li>
-        <li>Chương trình đại học <strong>TOP 300 thế giới</strong></li>
+        <li data-i18n="hero.bullet1">Tư vấn tuyển sinh bằng AI, trả lời tức thì mọi lúc</li>
+        <li data-i18n-html="hero.bullet2">Chương trình đại học <strong>TOP 300 thế giới</strong></li>
       </ul>
       <div class="hero__actions">
-        <a href="#chat" class="btn btn--primary">Tư vấn ngay</a>
-        <a href="#faq" class="btn btn--ghost">Câu hỏi thường gặp</a>
+        <a href="#chat" class="btn btn--primary" data-i18n="hero.ctaChat">Tư vấn ngay</a>
+        <a href="#faq" class="btn btn--ghost" data-i18n="hero.ctaFaq">Câu hỏi thường gặp</a>
       </div>
     </div>
     <div class="hero__media">
-      <img src="assets/hero-graduation.jpg" alt="Lễ tốt nghiệp Swinburne Việt Nam">
+      <img src="assets/bn.jpg" data-i18n-alt="hero.imgAlt" alt="Lễ tốt nghiệp Swinburne Việt Nam">
     </div>
   </section>
 
   <!-- ===== WHY CHOOSE US ===== -->
   <section class="why-choose">
-    <h2 class="section__title section__title--light">Tại sao lựa chọn Swinburne Việt Nam?</h2>
+    <h2 class="section__title section__title--light" data-i18n="why.title">Tại sao lựa chọn Swinburne Việt Nam?</h2>
     <div class="why-choose__grid">
       <div class="why-item">
         <img src="assets/icon-rocket.png" alt="" class="why-item__icon">
-        <p>Nhận bằng từ trường Đại học TOP 300 thế giới (QS 2026)</p>
+        <p data-i18n="why.item1">Nhận bằng từ trường Đại học TOP 300 thế giới (QS 2026)</p>
       </div>
       <div class="why-item">
         <img src="assets/icon-scale.png" alt="" class="why-item__icon">
-        <p>Chất lượng đào tạo kiểm định quốc tế</p>
+        <p data-i18n="why.item2">Chất lượng đào tạo kiểm định quốc tế</p>
       </div>
       <div class="why-item">
         <img src="assets/icon-globe.png" alt="" class="why-item__icon">
-        <p>Đào tạo kỹ năng công dân toàn cầu</p>
+        <p data-i18n="why.item3">Đào tạo kỹ năng công dân toàn cầu</p>
       </div>
       <div class="why-item">
         <img src="assets/icon-handshake.png" alt="" class="why-item__icon">
-        <p>Kết nối trải nghiệm thực tế, doanh nghiệp</p>
+        <p data-i18n="why.item4">Kết nối trải nghiệm thực tế, doanh nghiệp</p>
       </div>
       <div class="why-item">
         <img src="assets/icon-briefcase.png" alt="" class="why-item__icon">
-        <p>Cơ hội việc làm tốt trong nước và quốc tế</p>
+        <p data-i18n="why.item5">Cơ hội việc làm tốt trong nước và quốc tế</p>
       </div>
     </div>
   </section>
 
   <!-- ===== QUICK FAQ SUGGESTIONS ===== -->
   <section class="quick-faq" id="faq">
-    <h2 class="section__title">Câu hỏi thường gặp</h2>
-    <p class="section__subtitle">Nhấn để hỏi trợ lý AI ngay lập tức</p>
+    <h2 class="section__title" data-i18n="faq.title">Câu hỏi thường gặp</h2>
+    <p class="section__subtitle" data-i18n="faq.subtitle">Nhấn để hỏi trợ lý AI ngay lập tức</p>
     <div class="quick-faq__grid" id="quickFaqGrid">
-      <!-- populated by script.js, static fallback below -->
+      <!-- data-question luôn giữ tiếng Việt vì chatbot trả lời bằng tiếng Việt;
+           chỉ nhãn hiển thị trên nút mới đổi theo ngôn ngữ giao diện. -->
       <button class="faq-chip" data-question="Học phí các ngành tại Swinburne Việt Nam là bao nhiêu?">
-        <span class="faq-chip__icon">💰</span> Học phí
+        <span class="faq-chip__icon">💰</span> <span data-i18n="faq.tuition">Học phí</span>
       </button>
       <button class="faq-chip" data-question="Swinburne Việt Nam có những học bổng nào?">
-        <span class="faq-chip__icon">🎓</span> Học bổng
+        <span class="faq-chip__icon">🎓</span> <span data-i18n="faq.scholarship">Học bổng</span>
       </button>
       <button class="faq-chip" data-question="Điều kiện đầu vào để nhập học Swinburne Việt Nam là gì?">
-        <span class="faq-chip__icon">📋</span> Điều kiện nhập học
+        <span class="faq-chip__icon">📋</span> <span data-i18n="faq.entry">Điều kiện nhập học</span>
       </button>
       <button class="faq-chip" data-question="Swinburne Việt Nam có chương trình du học chuyển tiếp không?">
-        <span class="faq-chip__icon">✈️</span> Du học chuyển tiếp
+        <span class="faq-chip__icon">✈️</span> <span data-i18n="faq.transfer">Du học chuyển tiếp</span>
       </button>
       <button class="faq-chip" data-question="Swinburne Việt Nam có những ngành học nào?">
-        <span class="faq-chip__icon">📚</span> Ngành học
+        <span class="faq-chip__icon">📚</span> <span data-i18n="faq.majors">Ngành học</span>
       </button>
       <button class="faq-chip" data-question="Thời gian nộp hồ sơ nhập học là khi nào?">
-        <span class="faq-chip__icon">🗓️</span> Thời hạn hồ sơ
+        <span class="faq-chip__icon">🗓️</span> <span data-i18n="faq.deadline">Thời hạn hồ sơ</span>
       </button>
     </div>
   </section>
 
   <!-- ===== PROGRAMS ===== -->
   <section class="programs" id="programs">
-    <h2 class="section__title">Chương trình đào tạo tại Swinburne Việt Nam</h2>
-    <p class="section__subtitle">Dữ liệu được cập nhật tự động từ swinburne-vn.edu.vn</p>
+    <h2 class="section__title" data-i18n="programs.title">Chương trình đào tạo tại Swinburne Việt Nam</h2>
+    <p class="section__subtitle" data-i18n="programs.subtitle">Dữ liệu được cập nhật tự động từ swinburne-vn.edu.vn</p>
     <div class="programs__grid" id="programsGrid">
-      <!-- Populated dynamically from backend/scraped data in the future. Static cards with real photos for now: -->
+      <!-- script.js chỉ thay CHỮ trong các card này bằng dữ liệu scrape được,
+           còn ảnh giữ nguyên. Có đủ 5 card cho 5 ngành, mỗi card 1 ảnh KHÁC NHAU
+           để không bị lặp ảnh khi hiển thị. -->
       <article class="card card--media">
-        <div class="card__media"><img src="assets/program-teamwork.jpg" alt="Công dân toàn cầu"></div>
+        <div class="card__media"><img src="assets/hero-graduation.jpg" alt="Công dân toàn cầu"></div>
         <div class="card__body">
-          <span class="card__tag">Cử nhân</span>
+          <span class="card__tag" data-i18n="card.bachelor">Cử nhân</span>
           <h3>Công dân Toàn cầu</h3>
           <p>Chương trình đào tạo tư duy công dân toàn cầu, kỹ năng liên ngành và trải nghiệm quốc tế.</p>
         </div>
       </article>
       <article class="card card--media">
-        <div class="card__media"><img src="assets/event-guest.jpeg" alt="Công nghệ Thông tin"></div>
+        <div class="card__media"><img src="assets/hero-fansipan.jpg" alt="Công nghệ Thông tin"></div>
         <div class="card__body">
-          <span class="card__tag">Cử nhân</span>
+          <span class="card__tag" data-i18n="card.bachelor">Cử nhân</span>
           <h3>Công nghệ Thông tin</h3>
           <p>Khoa học máy tính, phần mềm, an ninh mạng và trí tuệ nhân tạo.</p>
         </div>
       </article>
       <article class="card card--media">
-        <div class="card__media"><img src="assets/program-friends.jpg" alt="Kinh doanh"></div>
+        <div class="card__media"><img src="assets/program-amazon.jpg" alt="Kinh doanh"></div>
         <div class="card__body">
-          <span class="card__tag">Cử nhân</span>
+          <span class="card__tag" data-i18n="card.bachelor">Cử nhân</span>
           <h3>Quản trị Kinh doanh</h3>
           <p>Marketing, tài chính, quản lý chuỗi cung ứng và khởi nghiệp.</p>
+        </div>
+      </article>
+      <article class="card card--media">
+        <div class="card__media"><img src="assets/program-friends.jpg" alt="Thiết kế"></div>
+        <div class="card__body">
+          <span class="card__tag" data-i18n="card.bachelor">Cử nhân</span>
+          <h3>Thiết kế</h3>
+          <p>Thiết kế truyền thông, trải nghiệm người dùng và tư duy sáng tạo.</p>
+        </div>
+      </article>
+      <article class="card card--media">
+        <div class="card__media"><img src="assets/event-guest.jpeg" alt="Truyền thông Đa phương tiện"></div>
+        <div class="card__body">
+          <span class="card__tag" data-i18n="card.bachelor">Cử nhân</span>
+          <h3>Truyền thông Đa phương tiện</h3>
+          <p>Quan hệ công chúng, truyền thông xã hội và quảng cáo.</p>
         </div>
       </article>
     </div>
@@ -157,7 +182,7 @@
 
   <!-- ===== SCHOLARSHIPS ===== -->
   <section class="scholarships" id="scholarships">
-    <h2 class="section__title">Học bổng nổi bật</h2>
+    <h2 class="section__title" data-i18n="scholarships.title">Học bổng nổi bật</h2>
     <div class="scholarships__grid" id="scholarshipsGrid">
       <article class="card card--accent">
         <h3>Học bổng Tài năng</h3>
@@ -172,8 +197,8 @@
 
   <!-- ===== GALLERY (hoạt động sinh viên thật) ===== -->
   <section class="gallery">
-    <h2 class="section__title">Hoạt động sinh viên</h2>
-    <p class="section__subtitle">Khoảnh khắc từ cộng đồng Swinburne Việt Nam</p>
+    <h2 class="section__title" data-i18n="gallery.title">Hoạt động sinh viên</h2>
+    <p class="section__subtitle" data-i18n="gallery.subtitle">Khoảnh khắc từ cộng đồng Swinburne Việt Nam</p>
     <div class="gallery__grid">
       <img src="assets/hero-fansipan.jpg" alt="Fansipan Trek 2022" class="gallery__item">
       <img src="assets/program-amazon.jpg" alt="Tham quan doanh nghiệp Amazon">
@@ -184,7 +209,7 @@
 
   <!-- ===== FLOATING CHAT WIDGET ===== -->
   <div class="chat-widget" id="chatWidget">
-    <button class="chat-fab" id="chatFab" aria-label="Mở trợ lý tư vấn AI">
+    <button class="chat-fab" id="chatFab" data-i18n-aria="chat.open" aria-label="Mở trợ lý tư vấn AI">
       <span class="chat-fab__icon">💬</span>
     </button>
 
@@ -192,26 +217,27 @@
       <header class="chat-panel__header">
         <div class="chat-panel__title">
           <span class="chat-panel__dot"></span>
-          Trợ lý tuyển sinh AI
+          <span data-i18n="chat.title">Trợ lý tuyển sinh AI</span>
         </div>
-        <button class="chat-panel__close" id="chatClose" aria-label="Đóng chat">✕</button>
+        <button class="chat-panel__close" id="chatClose" data-i18n-aria="chat.close" aria-label="Đóng chat">✕</button>
       </header>
 
       <div class="chat-panel__messages" id="chatMessages">
         <div class="msg msg--bot">
-          <p>Xin chào 👋 Mình là trợ lý tuyển sinh AI của Swinburne Việt Nam. Bạn muốn hỏi về học phí, học bổng, ngành học hay điều kiện nhập học?</p>
+          <p data-i18n="chat.greeting">Xin chào 👋 Mình là trợ lý tuyển sinh AI của Swinburne Việt Nam. Bạn muốn hỏi về học phí, học bổng, ngành học hay điều kiện nhập học?</p>
         </div>
       </div>
 
       <div class="chat-panel__suggestions" id="chatSuggestions">
-        <button class="chip" data-question="Học phí như thế nào?">Học phí?</button>
-        <button class="chip" data-question="Có học bổng gì?">Học bổng?</button>
-        <button class="chip" data-question="Điều kiện nhập học?">Điều kiện nhập học?</button>
+        <button class="chip" data-question="Học phí như thế nào?" data-i18n="chat.chipTuition">Học phí?</button>
+        <button class="chip" data-question="Có học bổng gì?" data-i18n="chat.chipScholarship">Học bổng?</button>
+        <button class="chip" data-question="Điều kiện nhập học?" data-i18n="chat.chipEntry">Điều kiện nhập học?</button>
       </div>
 
       <form class="chat-panel__input" id="chatForm">
-        <input type="text" id="chatInput" placeholder="Nhập câu hỏi của bạn..." autocomplete="off" />
-        <button type="submit" class="chat-send" aria-label="Gửi">➤</button>
+        <input type="text" id="chatInput" data-i18n-placeholder="chat.placeholder"
+               placeholder="Nhập câu hỏi của bạn..." autocomplete="off" />
+        <button type="submit" class="chat-send" data-i18n-aria="chat.send" aria-label="Gửi">➤</button>
       </form>
     </div>
   </div>
@@ -224,26 +250,26 @@
       </div>
 
       <div class="footer__col">
-        <h4>Swinburne Việt Nam</h4>
-        <a href="#programs">Khoá học</a>
-        <a href="#scholarships">Học bổng</a>
+        <h4 data-i18n="footer.school">Swinburne Việt Nam</h4>
+        <a href="#programs" data-i18n="nav.programs">Khoá học</a>
+        <a href="#scholarships" data-i18n="nav.scholarships">Học bổng</a>
       </div>
 
       <div class="footer__col">
-        <h4>Tuyển sinh</h4>
-        <a href="#">Tuyển sinh 2026</a>
-        <a href="#">Thủ tục tuyển sinh</a>
+        <h4 data-i18n="footer.admission">Tuyển sinh</h4>
+        <a href="#" data-i18n="footer.admission2026">Tuyển sinh 2026</a>
+        <a href="#" data-i18n="footer.procedure">Thủ tục tuyển sinh</a>
       </div>
 
       <div class="footer__col">
-        <h4>Liên hệ</h4>
+        <h4 data-i18n="footer.contact">Liên hệ</h4>
         <a href="mailto:swinburne@fe.edu.vn">swinburne@fe.edu.vn</a>
-        <a href="#chat">Tư vấn AI 24/7</a>
+        <a href="#chat" data-i18n="footer.ai247">Tư vấn AI 24/7</a>
       </div>
     </div>
 
     <div class="footer__bottom">
-      <p>© 2026 Swinburne University of Technology Vietnam. Hệ thống tư vấn tuyển sinh AI — Đồ án tốt nghiệp SE25/1.</p>
+      <p data-i18n="footer.copyright">© 2026 Swinburne University of Technology Vietnam. Hệ thống tư vấn tuyển sinh AI — Đồ án tốt nghiệp SE25/1.</p>
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>

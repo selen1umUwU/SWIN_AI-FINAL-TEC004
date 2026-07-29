@@ -88,11 +88,35 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .utility-bar__inner a { color: #C9C9CC; transition: color var(--transition); }
 .utility-bar__inner a:hover { color: #fff; }
 
-.utility-bar__lang { margin-left: auto; color: #C9C9CC; }
-.utility-bar__lang strong { color: var(--swin-red); }
+.utility-bar__lang {
+  margin-left: auto;
+  color: #C9C9CC;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.lang-sep { color: #55555C; }
 
+/* Nút chuyển ngôn ngữ EN | VI — ngôn ngữ đang bật được tô đỏ Swinburne */
+.lang-btn {
+  background: none;
+  border: none;
+  padding: 2px 2px;
+  color: #C9C9CC;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: color var(--transition);
+}
+.lang-btn:hover { color: #fff; }
+.lang-btn.is-active { color: var(--swin-red); }
+
+/* Trên điện thoại: ẩn các link phụ cho gọn nhưng PHẢI giữ lại nút đổi ngôn ngữ,
+   nếu ẩn cả thanh thì người dùng mobile không còn cách nào chuyển EN/VI. */
 @media (max-width: 640px) {
-  .utility-bar { display: none; }
+  .utility-bar__inner a { display: none; }
+  .utility-bar__inner { justify-content: flex-end; padding: 6px 16px; }
 }
 
 /* ---------- NAVBAR ---------- */
