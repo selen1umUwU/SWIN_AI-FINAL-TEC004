@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
 const TRANSLATIONS = {
   vi: {
     "html.lang": "vi",
+    "util.brand": "Swinburne Việt Nam",
     "util.campus": "Cơ sở",
     "nav.programs": "Khoá học",
     "nav.scholarships": "Học bổng",
@@ -95,6 +96,7 @@ const TRANSLATIONS = {
   },
   en: {
     "html.lang": "en",
+    "util.brand": "Swinburne Vietnam",
     "util.campus": "Campuses",
     "nav.programs": "Courses",
     "nav.scholarships": "Scholarships",

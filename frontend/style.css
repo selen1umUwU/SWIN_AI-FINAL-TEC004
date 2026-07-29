@@ -85,6 +85,12 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .utility-bar__inner a { color: #C9C9CC; transition: color var(--transition); }
 .utility-bar__inner a:hover { color: #fff; }
 
+.utility-bar__brand {
+  color: #C9C9CC;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
 .utility-bar__lang {
   margin-left: auto;
   color: #C9C9CC;
