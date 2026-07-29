@@ -28,6 +28,7 @@ import logging
 import sys
 import time
 from collections import deque, Counter
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 
@@ -85,9 +86,13 @@ logging.basicConfig(
 )
 
 
+_RUN_LOG = []
+
+
 def log(msg: str):
     print(msg)
     logging.info(msg)
+    _RUN_LOG.append(f"{datetime.now():%H:%M:%S} {msg}")
 
 
 # ---------- FUNCTIONAL CLEANING HELPERS (Week 4 style) ----------
@@ -262,6 +267,37 @@ def export_to_neon(pages: list) -> bool:
         return False
 
 
+def export_log_to_neon(started_at, status: str, pages: list) -> bool:
+    """
+    Lưu log của lần chạy này vào bảng scrape_runs trên Neon.
+
+    Cần thiết vì sau khi deploy lên Render thì file scraper.log nằm trong
+    container, không mở ra xem được — giống hệt vấn đề của scraped_data.json.
+    """
+    try:
+        import models
+        import page_store
+        from database import engine
+
+        models.Base.metadata.create_all(bind=engine)
+        run_id = page_store.save_scrape_run(
+            started_at=started_at,
+            status=status,
+            pages_saved=len(pages),
+            content_lines=sum(len(p["content"]) for p in pages),
+            log_text="\n".join(_RUN_LOG),
+        )
+        msg = f"Đã lưu log lần chạy này vào bảng scrape_runs (id={run_id})."
+        print(msg)
+        logging.info(msg)
+        return True
+    except Exception as e:
+        msg = f"[CẢNH BÁO] Không lưu được log lên Neon: {e}"
+        print(msg)
+        logging.info(msg)
+        return False
+
+
 def verify_integrity(pages: list, filename: str = "scraped_data.json") -> bool:
     path = OUTPUT_DIR / filename
     try:
@@ -278,24 +314,37 @@ def verify_integrity(pages: list, filename: str = "scraped_data.json") -> bool:
 
 # ---------- MAIN ----------
 def scrape_swinburne_data():
+    started_at = datetime.now(timezone.utc)
+    _RUN_LOG.clear()
     log("=" * 60)
     log(f"BẮT ĐẦU CRAWL TOÀN BỘ {START_URL}")
     log("=" * 60)
 
-    pages = crawl_site()
-    pages = remove_boilerplate(pages)
+    pages, status = [], "failed"
+    try:
+        pages = crawl_site()
+        pages = remove_boilerplate(pages)
 
-    before = len(pages)
-    pages = [p for p in pages if len(p["content"]) >= MIN_CONTENT_LINES]
-    log(f"Loại {before - len(pages)} trang stub (< {MIN_CONTENT_LINES} dòng nội dung).")
+        before = len(pages)
+        pages = [p for p in pages if len(p["content"]) >= MIN_CONTENT_LINES]
+        log(f"Loại {before - len(pages)} trang stub (< {MIN_CONTENT_LINES} dòng nội dung).")
 
-    export_json(pages)
-    export_csv(pages)
-    verify_integrity(pages)
-    export_to_neon(pages)
+        export_json(pages)
+        export_csv(pages)
+        verify_integrity(pages)
+        export_to_neon(pages)
 
-    total_lines = sum(len(p["content"]) for p in pages)
-    log(f"HOÀN TẤT. Tổng {len(pages)} trang, {total_lines} dòng nội dung sạch.")
+        total_lines = sum(len(p["content"]) for p in pages)
+        log(f"HOÀN TẤT. Tổng {len(pages)} trang, {total_lines} dòng nội dung sạch.")
+        status = "success"
+    except Exception as e:
+        # Lần chạy hỏng cũng phải để lại vết trên Neon, nếu không thì nhìn bảng
+        # chỉ thấy các lần thành công và tưởng scraper vẫn đang chạy đều.
+        log(f"[LỖI] Crawl thất bại: {e}")
+        status = "failed"
+        raise
+    finally:
+        export_log_to_neon(started_at, status, pages)
 
 
 if __name__ == "__main__":

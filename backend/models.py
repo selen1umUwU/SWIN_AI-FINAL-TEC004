@@ -18,3 +18,14 @@ class ScrapedPage(Base):
     title = Column(Text)
     content = Column(JSON)
     scraped_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class ScrapeRun(Base):
+    __tablename__ = "scrape_runs"
+    id = Column(Integer, primary_key=True, index=True)
+    started_at = Column(DateTime(timezone=True))
+    finished_at = Column(DateTime(timezone=True), server_default=func.now())
+    status = Column(String, index=True)
+    pages_saved = Column(Integer)
+    content_lines = Column(Integer)
+    log = Column(Text)
