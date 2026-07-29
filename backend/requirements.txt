@@ -6,4 +6,3 @@ google-genai
 beautifulsoup4
 requests
 python-dotenv
-matplotlib

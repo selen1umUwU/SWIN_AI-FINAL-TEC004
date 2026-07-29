@@ -8,7 +8,15 @@ phải đến từ một lần chạy của `evaluate.py`, không được gõ t
 |---|---|
 | `eval_queries.jsonl` | Bộ 53 câu hỏi kiểm thử + đáp án chuẩn (ground truth) |
 | `evaluate.py` | Gọi API, chấm điểm từng câu, tổng hợp chỉ số, vẽ biểu đồ |
+| `analyze_results.py` | Phân tích sâu bằng Pandas + đo tỉ lệ tự động hoá trên chat thật |
 | `results/<timestamp>/` | Kết quả mỗi lần chạy (bị `.gitignore`, chạy lại là có) |
+
+Hai script trả lời hai câu hỏi **khác nhau**, đừng lẫn:
+
+- `evaluate.py` → *"chatbot đúng bao nhiêu % trên bộ test nhóm tự soạn?"*
+- `analyze_results.py` → *"chatbot tự xử lý được bao nhiêu % câu hỏi **người dùng
+  thật** gõ vào?"* — đây mới là chỉ tiêu *"50% automation of common queries"*
+  trong đề bài SE25/1, và bộ test 53 câu **không** trả lời được câu này.
 
 ---
 
@@ -65,6 +73,32 @@ results/20260729-142530/
 ├── chart_latency.png    # phân bố thời gian phản hồi
 └── chart_accuracy.png   # accuracy theo từng nhóm câu hỏi
 ```
+
+**Phân tích sâu + đo tỉ lệ tự động hoá:**
+
+```bash
+python analyze_results.py
+```
+
+Mặc định lấy lần đo **vận hành bình thường** mới nhất (không lấy lần failover, vì
+lần đó cố tình ép provider chính lỗi nên không đại diện). Kết quả ghi vào
+`results/<timestamp>/analysis/`. Thêm `--skip-db` nếu không kết nối được Neon.
+
+### Ba cái bẫy khi đo tỉ lệ tự động hoá
+
+Con số này rất dễ bị thổi phồng. `analyze_results.py` xử lý cả ba:
+
+1. **Bảng `chat_history` lẫn chính lượt gọi của bộ đo.** Mỗi lần chạy
+   `evaluate.py` là thêm 56 lượt vào bảng, cộng các phiên test tay. Chỉ lấy phiên
+   có tiền tố `sess_` (do `getSessionId()` trong `script.js` sinh khi người dùng
+   mở web) mới là câu hỏi thật. Không lọc thì tính chính bộ test của mình thành
+   câu hỏi người dùng.
+2. **Câu ngoài phạm vi phải bỏ khỏi mẫu số.** Chatbot từ chối *"ronaldo với messi
+   ai là goat"* là hành vi **đúng**, không phải một lần tự động hoá thất bại.
+3. **Nút gợi ý bấm sẵn không phải phép thử thật.** Ba chip trong widget chat và
+   các ô FAQ là câu do chính dự án chọn trước, chatbot đương nhiên trả lời tốt.
+   Script đọc thẳng `data-question` từ `index.html` để tách riêng, và **con số nên
+   đưa vào báo cáo là tỉ lệ trên câu người dùng TỰ GÕ**.
 
 ---
 
