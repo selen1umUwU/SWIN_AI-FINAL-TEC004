@@ -474,8 +474,16 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = "gemini-3.1-flash-lite"
 gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
+# Cờ ép API chính lỗi, chỉ dùng khi demo hoặc chạy eval/evaluate.py --failover-run.
+# Không có cờ này thì không có cách nào chứng minh chuỗi fallback thật sự chạy.
+FORCE_PRIMARY_FAILURE = os.getenv("FORCE_PRIMARY_FAILURE", "0") == "1"
+if FORCE_PRIMARY_FAILURE:
+    print("[DEMO] FORCE_PRIMARY_FAILURE=1 -> ép Gemini lỗi, mọi câu hỏi đi qua OpenRouter.")
+
 
 def ask_gemini(question: str, history: list = ()) -> str:
+    if FORCE_PRIMARY_FAILURE:
+        raise RuntimeError("FORCED_FAILURE: mô phỏng lỗi 429 quota của Gemini")
     if gemini_client is None:
         raise RuntimeError("Chưa cấu hình GEMINI_API_KEY")
     response = gemini_client.models.generate_content(
@@ -641,14 +649,54 @@ def _find_best_page(query: str, must_have_norm: str = "") -> dict:
     return {}
 
 
+MIN_CONDITION_CHARS = 40
+SHARED_PREFIX_CHARS = 40
+
+_GPA_LINE_RE = re.compile(r"diem trung binh")
+_GPA_THRESHOLD_RE = re.compile(r"tu ([\d.,]+(?: ?[-–] ?[\d.,]+)?) tro len")
+
+
+def _condition_lines(lines: list, start: int) -> list:
+    """Các dòng điều kiện của 1 học bổng: từ sau tiêu đề tới tiêu đề học bổng kế tiếp."""
+    out = []
+    for raw in lines[start:]:
+        candidate = raw.lstrip("–-— ").strip()
+        if normalize(candidate).startswith("hoc bong"):
+            break
+        if len(candidate) >= MIN_CONDITION_CHARS and not candidate.endswith(":"):
+            out.append(candidate)
+    return out
+
+
+def _gpa_threshold(conditions: list) -> str:
+    """
+    Rút ngưỡng GPA ('7.0-8.0', '8.5'...) từ dòng điều kiện học lực.
+
+    Phải khớp trên text CÒN dấu câu: normalize() biến mọi ký tự không phải chữ/số
+    thành khoảng trắng, nên "7.0-8.0" thành "7 0 8 0" và không còn nhận ra được.
+    """
+    for line in conditions:
+        plain = _strip_accents(line.lower())
+        if _GPA_LINE_RE.search(plain):
+            found = _GPA_THRESHOLD_RE.search(plain)
+            if found:
+                return found.group(1).replace(" ", "")
+    return ""
+
+
 def extract_scholarships(page: dict) -> list:
     """
     Bóc danh sách học bổng từ trang 'Học bổng Swinburne Vietnam'.
     Cấu trúc trên web: 1 dòng tiêu đề "Học bổng X: Giá trị N triệu VND", theo sau
     là dòng "– Điều kiện hồ sơ tham khảo:" rồi tới các dòng điều kiện cụ thể.
+
+    Mô tả KHÔNG lấy dòng điều kiện đầu tiên: dòng đó luôn là yêu cầu học lực, viết
+    gần như y hệt nhau ở mọi học bổng nên card nào cũng giống card nào. Thay vào
+    đó tách riêng ngưỡng GPA (phần thật sự khác nhau) rồi ghép với dòng điều kiện
+    ÍT TRÙNG NHẤT giữa các học bổng — đó mới là thứ phân biệt chúng.
     """
     lines = [l.strip() for l in page.get("content", [])]
-    items = []
+    found = []
 
     for i, line in enumerate(lines):
         norm = normalize(line)
@@ -664,23 +712,49 @@ def extract_scholarships(page: dict) -> list:
         title, _, after_colon = line.partition(":")
         title, after_colon = title.strip(), after_colon.strip()
 
-        value, desc = "", ""
+        value, inline_desc = "", ""
         after_norm = normalize(after_colon)
         if after_colon and len(after_colon) < 80 and ("gia tri" in after_norm or "tri gia" in after_norm):
             value = after_colon.rstrip(".;, ")
-        elif len(after_colon) >= 40:
-            desc = after_colon
+        elif len(after_colon) >= MIN_CONDITION_CHARS:
+            inline_desc = after_colon
 
-        if not desc:
-            for nxt in lines[i + 1:i + 6]:
-                candidate = nxt.lstrip("–-—").strip()
-                if len(candidate) >= 40 and not normalize(candidate).startswith("hoc bong"):
-                    desc = candidate
-                    break
-
-        items.append({
+        conditions = _condition_lines(lines, i + 1)
+        found.append({
             "title": title,
             "value": value,
+            "inline_desc": inline_desc,
+            "conditions": conditions,
+            "gpa": _gpa_threshold(conditions),
+        })
+
+    # Dòng nào xuất hiện ở nhiều học bổng thì càng ít giá trị phân biệt.
+    shared = {}
+    for item in found:
+        for line in item["conditions"]:
+            key = normalize(line)[:SHARED_PREFIX_CHARS]
+            shared[key] = shared.get(key, 0) + 1
+
+    items = []
+    for item in found:
+        distinctive = ""
+        candidates = [c for c in item["conditions"]
+                      if not _GPA_LINE_RE.search(normalize(c))]
+        if candidates:
+            distinctive = min(
+                candidates,
+                key=lambda c: (shared[normalize(c)[:SHARED_PREFIX_CHARS]],
+                               candidates.index(c)),
+            )
+
+        desc = item["inline_desc"]
+        if not desc:
+            lead = f"GPA từ {item['gpa']} trở lên. " if item["gpa"] else ""
+            desc = f"{lead}{distinctive}".strip()
+
+        items.append({
+            "title": item["title"],
+            "value": item["value"],
             "desc": _shorten(desc),
         })
 
@@ -814,6 +888,25 @@ def scraped_data_endpoint(limit: int = 50, offset: int = 0):
             for p in window
         ],
     }
+
+
+@app.get("/api/scrape-logs")
+def scrape_logs_endpoint(limit: int = 10, full: bool = False):
+    """
+    Xem log các lần chạy scraper đã lưu trên Neon. Mặc định chỉ trả phần tóm tắt
+    cho gọn; thêm ?full=true để lấy nguyên văn log của từng lần chạy.
+    """
+    try:
+        runs = page_store.fetch_scrape_runs(max(1, min(limit, 50)))
+    except Exception as e:
+        return {"error": f"Không đọc được DB: {e}", "runs": []}
+
+    if not full:
+        for run in runs:
+            lines = run["log"].split("\n")
+            run["log_lines"] = len(lines)
+            run["log"] = "\n".join(lines[-12:])
+    return {"total": len(runs), "runs": runs}
 
 
 @app.post("/api/scraped-data/sync")
