@@ -11,8 +11,9 @@ Cách hoạt động:
 4. Tự động loại bỏ các đoạn text bị LẶP LẠI trên hầu hết các trang
    (menu, footer, banner...) — vì đó là rác, không phải nội dung thật.
 5. Lưu ra:
-   - scraped_data.json  -> dữ liệu có cấu trúc (url, title, content) — ĐỊNH DẠNG
-     LƯU TRỮ CHÍNH, main.py sẽ đọc trực tiếp từ file này.
+   - Bảng scraped_pages trên Neon PostgreSQL — NGUỒN CHÍNH mà main.py đọc.
+   - scraped_data.json  -> bản sao trong repo, dùng để nạp lần đầu khi bảng còn
+     rỗng và làm phương án dự phòng khi mất kết nối DB.
    - scraped_data.csv   -> bản CSV để xem nhanh bằng Excel (tuỳ chọn, không bắt buộc)
 
 Áp dụng kiến thức:
