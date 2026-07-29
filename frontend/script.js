@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
 const TRANSLATIONS = {
   vi: {
     "html.lang": "vi",
+    "page.title.home": "Swinburne Việt Nam | Tư vấn tuyển sinh AI",
+    "page.title.campus": "Cơ sở | Swinburne Việt Nam",
     "util.brand": "Swinburne Việt Nam",
     "util.campus": "Cơ sở",
     "nav.programs": "Khoá học",
@@ -96,6 +98,8 @@ const TRANSLATIONS = {
   },
   en: {
     "html.lang": "en",
+    "page.title.home": "Swinburne Vietnam | AI Admission Consultant",
+    "page.title.campus": "Campuses | Swinburne Vietnam",
     "util.brand": "Swinburne Vietnam",
     "util.campus": "Campuses",
     "nav.programs": "Courses",
@@ -277,17 +281,68 @@ const PROGRAM_EN = {
   },
 };
 
+/* Bản tiếng Anh cho học bổng — cũng do dự án tự soạn như PROGRAM_EN, vì trang
+   /en/ của trường không có phần này. Khoá tra cứu là tên tiếng Anh đứng ngay sau
+   chữ "Học bổng" trong tiêu đề scrape được ("Học bổng Pioneer (Người tiên phong)"
+   -> "pioneer"), khớp theo tiền tố nên tiêu đề có đuôi dài vẫn nhận ra. */
+const SCHOLARSHIP_EN = {
+  "change-maker": {
+    title: "Change-Maker Scholarship",
+    value: "Worth VND 50–100 million",
+    desc: "GPA from 7.0–8.0. For students who want to change and study better in an international environment.",
+  },
+  "pioneer": {
+    title: "Pioneer Scholarship",
+    value: "Worth VND 125–150 million",
+    desc: "GPA from 8.0. For students with good entrance exam results who clearly show a pioneering spirit.",
+  },
+  "nextgen": {
+    title: "NextGen Scholarship",
+    value: "Worth VND 175–200 million",
+    desc: "GPA from 8.5. Requires good English (IELTS 6.0 or above).",
+  },
+  "talent": {
+    title: "Talent Scholarship",
+    value: "Worth VND 225–250 million",
+    desc: "GPA from 9.0. Requires good English (IELTS 7.0 or above).",
+  },
+  "sustainable development": {
+    title: "Sustainable Development Scholarship",
+    value: "",
+    desc: "GPA from 7.0. For students facing particular hardship — disability, ethnic minority background, remote areas, or difficult family circumstances.",
+  },
+  "olympia": {
+    title: "Olympia Scholarship",
+    value: "From VND 300 million up to a full scholarship",
+    desc: "For high achievers in the “Duong len dinh Olympia” television contest, which Swinburne University of Technology (Australia) has sponsored for over 20 years.",
+  },
+  "fpt talent": {
+    title: "FPT Talent Scholarship — worth VND 125 million",
+    value: "",
+    desc: "For candidates whose parents work at FPT Corporation units, and students from the FPT School or FPT Polytechnic systems.",
+  },
+};
+
 /** Lấy khoá tra cứu từ tiêu đề: phần trong ngoặc cuối cùng, hoặc cả tiêu đề. */
 function programKey(title) {
   const inParens = title.match(/\(([^)]+)\)\s*$/);
   return (inParens ? inParens[1] : title).trim().toLowerCase();
 }
 
+/** Tìm bản dịch học bổng theo tiền tố tên tiếng Anh sau chữ "Học bổng". */
+function scholarshipEn(title) {
+  const name = title.replace(/^\s*Học bổng\s*/i, "").trim().toLowerCase();
+  const key = Object.keys(SCHOLARSHIP_EN).find((k) => name.startsWith(k));
+  return key ? SCHOLARSHIP_EN[key] : null;
+}
+
 /** Đổi 1 mục sang tiếng Anh nếu có bản dịch; không có thì giữ nguyên tiếng Việt. */
 function translateItem(topic, item) {
-  if (currentLang !== "en" || topic !== "programs") return item;
-  const en = PROGRAM_EN[programKey(item.title || "")];
-  return en ? { ...item, title: en.title, desc: en.desc } : item;
+  if (currentLang !== "en") return item;
+  let en = null;
+  if (topic === "programs") en = PROGRAM_EN[programKey(item.title || "")];
+  else if (topic === "scholarships") en = scholarshipEn(item.title || "");
+  return en ? { ...item, ...en } : item;
 }
 
 async function fillSectionFromApi(topic, gridId, { keepMedia }) {
