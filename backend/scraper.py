@@ -79,6 +79,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 # ---------- LOGGING (Week 5 style) ----------
 logging.basicConfig(
     filename=OUTPUT_DIR / "scraper.log",
+    encoding="utf-8",
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
