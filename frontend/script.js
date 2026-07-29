@@ -17,11 +17,6 @@ const TRANSLATIONS = {
   vi: {
     "html.lang": "vi",
     "util.campus": "Cơ sở",
-    "util.events": "Sự kiện",
-    "util.news": "Tin tức",
-    "util.library": "Thư viện",
-    "util.current": "Sinh viên hiện tại",
-    "util.alumni": "Cựu sinh viên",
     "nav.programs": "Khoá học",
     "nav.scholarships": "Học bổng",
     "nav.faq": "Câu hỏi thường gặp",
@@ -76,17 +71,31 @@ const TRANSLATIONS = {
     "footer.contact": "Liên hệ",
     "footer.ai247": "Tư vấn AI 24/7",
     "footer.copyright": "© 2026 Swinburne University of Technology Vietnam. Hệ thống tư vấn tuyển sinh AI — Đồ án tốt nghiệp SE25/1.",
+    "campus.title": "Cơ sở Swinburne Việt Nam",
+    "campus.subtitle": "Bốn cơ sở trên toàn quốc — Hà Nội, TP. Hồ Chí Minh, Đà Nẵng và Cần Thơ",
+    "campus.hanoi": "Cơ sở Hà Nội",
+    "campus.hcm": "Cơ sở TP. Hồ Chí Minh",
+    "campus.danang": "Cơ sở Đà Nẵng",
+    "campus.cantho": "Cơ sở Cần Thơ",
+    "campus.tagNorth": "Miền Bắc",
+    "campus.tagSouth": "Miền Nam",
+    "campus.tagCentral": "Miền Trung",
+    "campus.tagMekong": "Đồng bằng sông Cửu Long",
+    "campus.address": "Địa chỉ",
+    "campus.branch": "Cơ sở Hoà Lạc",
+    "campus.hotline": "Hotline",
+    "campus.majors": "Ngành đào tạo",
+    "campus.allMajors": "Triển khai tất cả 15 chuyên ngành",
+    "campus.majors8": "Triển khai 8 chuyên ngành:",
+    "campus.majors5": "Triển khai 5 chuyên ngành:",
+    "campus.note": "Cần tư vấn chọn cơ sở phù hợp?",
+    "campus.noteCta": "Hỏi trợ lý AI",
     "source.prefix": "Nguồn: cập nhật tự động từ",
     "source.link": "website trường",
   },
   en: {
     "html.lang": "en",
     "util.campus": "Campuses",
-    "util.events": "Events",
-    "util.news": "News",
-    "util.library": "Library",
-    "util.current": "Current students",
-    "util.alumni": "Alumni",
     "nav.programs": "Courses",
     "nav.scholarships": "Scholarships",
     "nav.faq": "FAQ",
@@ -141,6 +150,25 @@ const TRANSLATIONS = {
     "footer.contact": "Contact",
     "footer.ai247": "24/7 AI advice",
     "footer.copyright": "© 2026 Swinburne University of Technology Vietnam. AI admission consulting system — SE25/1 capstone project.",
+    "campus.title": "Swinburne Vietnam campuses",
+    "campus.subtitle": "Four campuses nationwide — Hanoi, Ho Chi Minh City, Da Nang and Can Tho",
+    "campus.hanoi": "Hanoi campus",
+    "campus.hcm": "Ho Chi Minh City campus",
+    "campus.danang": "Da Nang campus",
+    "campus.cantho": "Can Tho campus",
+    "campus.tagNorth": "Northern Vietnam",
+    "campus.tagSouth": "Southern Vietnam",
+    "campus.tagCentral": "Central Vietnam",
+    "campus.tagMekong": "Mekong Delta",
+    "campus.address": "Address",
+    "campus.branch": "Hoa Lac facility",
+    "campus.hotline": "Hotline",
+    "campus.majors": "Majors offered",
+    "campus.allMajors": "All 15 majors offered",
+    "campus.majors8": "8 majors offered:",
+    "campus.majors5": "5 majors offered:",
+    "campus.note": "Need help choosing a campus?",
+    "campus.noteCta": "Ask the AI assistant",
     "source.prefix": "Source: automatically updated from",
     "source.link": "the university website",
   },
@@ -287,6 +315,7 @@ function renderTextCards(grid, items) {
 function initTheme() {
   const root = document.documentElement;
   const toggleBtn = document.getElementById("themeToggle");
+  if (!toggleBtn) return;
   const icon = toggleBtn.querySelector(".theme-toggle__icon");
 
   const saved = localStorage.getItem("swin-theme") || "dark";
@@ -310,6 +339,7 @@ function initTheme() {
 function initMobileMenu() {
   const menuBtn = document.getElementById("menuToggle");
   const navLinks = document.getElementById("navLinks");
+  if (!menuBtn || !navLinks) return;
 
   menuBtn.addEventListener("click", () => {
     navLinks.classList.toggle("open");
@@ -329,6 +359,8 @@ function initChatWidget() {
   const input = document.getElementById("chatInput");
   const messages = document.getElementById("chatMessages");
   const suggestions = document.getElementById("chatSuggestions");
+
+  if (!fab || !panel || !form || !input || !messages || !suggestions) return;
 
   fab.addEventListener("click", () => {
     panel.classList.toggle("open");
@@ -400,10 +432,10 @@ function initChatWidget() {
 /* ---------- 4. FAQ CHIPS ON PAGE -> OPEN CHAT WITH QUESTION ---------- */
 function initFaqChips() {
   const chips = document.querySelectorAll(".faq-chip");
-  const fab = document.getElementById("chatFab");
   const panel = document.getElementById("chatPanel");
   const input = document.getElementById("chatInput");
   const form = document.getElementById("chatForm");
+  if (!panel || !input || !form) return;
 
   chips.forEach((chip) => {
     chip.addEventListener("click", () => {
@@ -420,6 +452,7 @@ function initFaqChips() {
 function initChatLinks() {
   const panel = document.getElementById("chatPanel");
   const input = document.getElementById("chatInput");
+  if (!panel || !input) return;
 
   document.querySelectorAll('a[href="#chat"]').forEach((link) => {
     link.addEventListener("click", (e) => {

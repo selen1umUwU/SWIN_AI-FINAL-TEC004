@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cơ sở | Swinburne Vietnam</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== TOP UTILITY BAR ===== -->
+  <div class="utility-bar">
+    <div class="utility-bar__inner">
+      <a href="campuses.html" data-i18n="util.campus">Cơ sở</a>
+      <span class="utility-bar__lang" id="langSwitch">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <span class="lang-sep">|</span>
+        <button type="button" class="lang-btn" data-lang="vi">VI</button>
+      </span>
+    </div>
+  </div>
+
+  <!-- ===== HEADER / NAVBAR ===== -->
+  <header class="navbar">
+    <div class="navbar__inner">
+      <a href="index.html" class="brand">
+        <img src="assets/logo-swinburne.svg" alt="Swinburne Vietnam" class="brand__logo">
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html#programs" data-i18n="nav.programs">Khoá học</a>
+        <a href="index.html#scholarships" data-i18n="nav.scholarships">Học bổng</a>
+        <a href="index.html#faq" data-i18n="nav.faq">Câu hỏi thường gặp</a>
+        <a href="index.html#chat" class="nav-cta" data-i18n="nav.cta">Tư vấn ngay</a>
+      </nav>
+
+      <div class="navbar__controls">
+        <button id="themeToggle" class="theme-toggle"
+                data-i18n-aria="theme.aria" data-i18n-title="theme.title"
+                aria-label="Chuyển chế độ sáng/tối" title="Sáng / Tối">
+          <span class="theme-toggle__icon">◐</span>
+        </button>
+        <button id="menuToggle" class="menu-toggle" data-i18n-aria="menu.aria" aria-label="Mở menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== CAMPUSES ===== -->
+  <section class="campuses" id="campuses">
+    <h1 class="section__title" data-i18n="campus.title">Cơ sở Swinburne Việt Nam</h1>
+    <p class="section__subtitle" data-i18n="campus.subtitle">Bốn cơ sở trên toàn quốc — Hà Nội, TP. Hồ Chí Minh, Đà Nẵng và Cần Thơ</p>
+
+    <div class="campus-list">
+
+      <article class="campus-card">
+        <div class="campus-card__media">
+          <img src="assets/Swinburne-Ha_Noi.jpg" alt="Swinburne Việt Nam — Cơ sở Hà Nội">
+        </div>
+        <div class="campus-card__body">
+          <span class="card__tag" data-i18n="campus.tagNorth">Miền Bắc</span>
+          <h2 data-i18n="campus.hanoi">Cơ sở Hà Nội</h2>
+          <dl class="campus-info">
+            <dt data-i18n="campus.address">Địa chỉ</dt>
+            <dd>Số 80 Duy Tân, Phường Cầu Giấy, TP. Hà Nội</dd>
+
+            <dt data-i18n="campus.branch">Cơ sở Hoà Lạc</dt>
+            <dd>Toà nhà Viện Đại học quốc tế FPT, Khu Giáo dục và Đào tạo, Khu CNC Hoà Lạc, Km29 Đại lộ Thăng Long, xã Hoà Lạc, TP. Hà Nội</dd>
+
+            <dt data-i18n="campus.hotline">Hotline</dt>
+            <dd><a href="tel:+84939403555">0939 403 555</a></dd>
+
+            <dt data-i18n="campus.majors">Ngành đào tạo</dt>
+            <dd data-i18n="campus.allMajors">Triển khai tất cả 15 chuyên ngành</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="campus-card">
+        <div class="campus-card__media">
+          <img src="assets/Swinburne-Ho_Chi_Minh.png" alt="Swinburne Việt Nam — Cơ sở TP. Hồ Chí Minh">
+        </div>
+        <div class="campus-card__body">
+          <span class="card__tag" data-i18n="campus.tagSouth">Miền Nam</span>
+          <h2 data-i18n="campus.hcm">Cơ sở TP. Hồ Chí Minh</h2>
+          <dl class="campus-info">
+            <dt data-i18n="campus.address">Địa chỉ</dt>
+            <dd>A35 Bạch Đằng, Phường Tân Sơn Hoà, TP. Hồ Chí Minh</dd>
+
+            <dt data-i18n="campus.hotline">Hotline</dt>
+            <dd><a href="tel:+84387148555">0387 148 555</a></dd>
+
+            <dt data-i18n="campus.majors">Ngành đào tạo</dt>
+            <dd data-i18n="campus.allMajors">Triển khai tất cả 15 chuyên ngành</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="campus-card">
+        <div class="campus-card__media">
+          <img src="assets/Swinburne-Da_Nang.jpg" alt="Swinburne Việt Nam — Cơ sở Đà Nẵng">
+        </div>
+        <div class="campus-card__body">
+          <span class="card__tag" data-i18n="campus.tagCentral">Miền Trung</span>
+          <h2 data-i18n="campus.danang">Cơ sở Đà Nẵng</h2>
+          <dl class="campus-info">
+            <dt data-i18n="campus.address">Địa chỉ</dt>
+            <dd>Lô 1+2-A14-16 Khu Công viên Bắc đài tưởng niệm, Đường 2 tháng 9, Phường Hoà Cường, TP. Đà Nẵng</dd>
+
+            <dt data-i18n="campus.hotline">Hotline</dt>
+            <dd><a href="tel:+84896630555">0896 630 555</a></dd>
+
+            <dt data-i18n="campus.majors">Ngành đào tạo</dt>
+            <dd><span data-i18n="campus.majors8">Triển khai 8 chuyên ngành:</span> Marketing, Logistics và Quản lý chuỗi cung ứng, Phân tích Kinh doanh, Kinh doanh Quốc tế, Trí tuệ Nhân tạo, Phát triển Phần mềm, Truyền thông Xã hội, Quan hệ Công chúng</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="campus-card">
+        <div class="campus-card__media">
+          <img src="assets/Swinburne-Can_Tho.jpg" alt="Swinburne Việt Nam — Cơ sở Cần Thơ">
+        </div>
+        <div class="campus-card__body">
+          <span class="card__tag" data-i18n="campus.tagMekong">Đồng bằng sông Cửu Long</span>
+          <h2 data-i18n="campus.cantho">Cơ sở Cần Thơ</h2>
+          <dl class="campus-info">
+            <dt data-i18n="campus.address">Địa chỉ</dt>
+            <dd>Số 600 Đường Nguyễn Văn Cừ, Phường An Bình, TP. Cần Thơ</dd>
+
+            <dt data-i18n="campus.hotline">Hotline</dt>
+            <dd><a href="tel:+84348766555">0348 766 555</a></dd>
+
+            <dt data-i18n="campus.majors">Ngành đào tạo</dt>
+            <dd><span data-i18n="campus.majors5">Triển khai 5 chuyên ngành:</span> Marketing, Kinh doanh Quốc tế, Phát triển Phần mềm, Trí tuệ Nhân tạo, Truyền thông Xã hội</dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+
+    <p class="campus-note">
+      <span data-i18n="campus.note">Cần tư vấn chọn cơ sở phù hợp?</span>
+      <a href="index.html#chat" data-i18n="campus.noteCta">Hỏi trợ lý AI</a>
+    </p>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <img src="assets/logo-swinburne.svg" alt="Swinburne Vietnam" class="footer__logo">
+      </div>
+
+      <div class="footer__col">
+        <h4 data-i18n="footer.school">Swinburne Việt Nam</h4>
+        <a href="index.html#programs" data-i18n="nav.programs">Khoá học</a>
+        <a href="index.html#scholarships" data-i18n="nav.scholarships">Học bổng</a>
+      </div>
+
+      <div class="footer__col">
+        <h4 data-i18n="footer.admission">Tuyển sinh</h4>
+        <a href="#" data-i18n="footer.admission2026">Tuyển sinh 2026</a>
+        <a href="#" data-i18n="footer.procedure">Thủ tục tuyển sinh</a>
+      </div>
+
+      <div class="footer__col">
+        <h4 data-i18n="footer.contact">Liên hệ</h4>
+        <a href="mailto:swinburne@fe.edu.vn">swinburne@fe.edu.vn</a>
+        <a href="index.html#chat" data-i18n="footer.ai247">Tư vấn AI 24/7</a>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <p data-i18n="footer.copyright">© 2026 Swinburne University of Technology Vietnam. Hệ thống tư vấn tuyển sinh AI — Đồ án tốt nghiệp SE25/1.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

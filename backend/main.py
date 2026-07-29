@@ -16,6 +16,7 @@ from google.genai import types
 from dotenv import load_dotenv
 
 import models
+import page_store
 from database import engine, get_db
 
 for stream in (sys.stdout, sys.stderr):
@@ -24,7 +25,10 @@ for stream in (sys.stdout, sys.stderr):
 
 load_dotenv()
 
-models.Base.metadata.create_all(bind=engine)
+try:
+    models.Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"[WARN] Không tạo được bảng trên DB: {e}")
 
 app = FastAPI()
 
@@ -222,18 +226,56 @@ def _build_chunks(content_lines: list) -> list:
     return chunks
 
 
-def load_pages(path: str = "scraped_data/scraped_data.json") -> list:
+SCRAPED_JSON_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "scraped_data", "scraped_data.json"
+)
+
+DEFAULT_PAGES = [{
+    "url": "",
+    "title": "Thông tin chung",
+    "content": ["Swinburne University Vietnam admission information."],
+}]
+
+
+def read_json_file(path: str = SCRAPED_JSON_PATH) -> list:
     """Đọc scraped_data.json, trả về list[{"url","title","content":[...]}]."""
     try:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"[WARN] Không đọc được {path} ({e}), dùng dữ liệu mặc định.")
-        return [{
-            "url": "",
-            "title": "Thông tin chung",
-            "content": ["Swinburne University Vietnam admission information."],
-        }]
+        print(f"[WARN] Không đọc được {path}: {e}")
+        return []
+
+
+def load_pages() -> list:
+    """
+    Nguồn dữ liệu chính là bảng scraped_pages trên Neon, không phải file JSON.
+    Lý do: khi deploy lên Render thì file trong container không xem được, còn
+    dữ liệu nằm trong Neon thì mở console lên là đọc/sửa được ngay.
+
+    Lần đầu chạy (bảng còn rỗng) thì tự nạp từ file JSON có sẵn trong repo lên
+    DB. Nếu DB hỏng thì vẫn đọc thẳng file JSON để chatbot không chết theo.
+    """
+    try:
+        pages = page_store.fetch_pages()
+        if pages:
+            print(f"[INFO] Nạp {len(pages)} trang từ bảng scraped_pages (Neon).")
+            return pages
+    except Exception as e:
+        print(f"[WARN] Không đọc được scraped_pages từ DB: {e}")
+        pages = read_json_file()
+        return pages or DEFAULT_PAGES
+
+    pages = read_json_file()
+    if not pages:
+        return DEFAULT_PAGES
+
+    try:
+        saved = page_store.save_pages(pages)
+        print(f"[INFO] Bảng scraped_pages rỗng -> đã đẩy {saved} trang từ JSON lên Neon.")
+    except Exception as e:
+        print(f"[WARN] Không ghi được scraped_pages lên DB: {e}")
+    return pages
 
 
 def prepare_pages(raw_pages: list) -> list:
@@ -273,7 +315,7 @@ ALL_PAGES = prepare_pages(load_pages())
 AVG_PAGE_LEN = (sum(p["length"] for p in ALL_PAGES) / len(ALL_PAGES)) if ALL_PAGES else 1
 _ALL_CHUNK_LENS = [n for p in ALL_PAGES for n in p["chunk_lengths"]]
 AVG_CHUNK_LEN = (sum(_ALL_CHUNK_LENS) / len(_ALL_CHUNK_LENS)) if _ALL_CHUNK_LENS else 1
-print(f"[INFO] Đã nạp {len(ALL_PAGES)} trang từ scraped_data.json vào bộ nhớ.")
+print(f"[INFO] Sẵn sàng tra cứu trên {len(ALL_PAGES)} trang (đã bỏ trang trùng nội dung).")
 
 
 TITLE_BOOST = 6.0
@@ -730,6 +772,61 @@ def section_endpoint(topic: str):
         "url": page.get("url", ""),
         "items": items,
     }
+
+
+# ==================== QUẢN LÝ DỮ LIỆU SCRAPE TRÊN NEON ====================
+def reload_pages() -> int:
+    """Nạp lại ALL_PAGES từ DB và dựng lại các chỉ số phục vụ tìm kiếm."""
+    global ALL_PAGES, AVG_PAGE_LEN, AVG_CHUNK_LEN
+    ALL_PAGES = prepare_pages(load_pages())
+    AVG_PAGE_LEN = (sum(p["length"] for p in ALL_PAGES) / len(ALL_PAGES)) if ALL_PAGES else 1
+    chunk_lens = [n for p in ALL_PAGES for n in p["chunk_lengths"]]
+    AVG_CHUNK_LEN = (sum(chunk_lens) / len(chunk_lens)) if chunk_lens else 1
+    _doc_freq.cache_clear()
+    return len(ALL_PAGES)
+
+
+@app.get("/api/scraped-data")
+def scraped_data_endpoint(limit: int = 50, offset: int = 0):
+    """
+    Xem dữ liệu scrape đang nằm trong Neon — thay cho việc mở file JSON, vốn
+    không xem được sau khi deploy lên Render.
+    """
+    try:
+        pages = page_store.fetch_pages()
+    except Exception as e:
+        return {"error": f"Không đọc được DB: {e}", "total": 0, "pages": []}
+
+    limit = max(1, min(limit, 200))
+    window = pages[offset:offset + limit]
+    return {
+        "total": len(pages),
+        "offset": offset,
+        "limit": limit,
+        "pages": [
+            {
+                "url": p["url"],
+                "title": p["title"],
+                "lines": len(p["content"]),
+                "chars": sum(len(line) for line in p["content"]),
+                "content": p["content"],
+            }
+            for p in window
+        ],
+    }
+
+
+@app.post("/api/scraped-data/sync")
+def sync_scraped_data_endpoint():
+    """Đẩy lại scraped_data.json lên Neon rồi nạp vào bộ nhớ (chạy sau scraper)."""
+    pages = read_json_file()
+    if not pages:
+        return {"ok": False, "message": "Không đọc được scraped_data.json."}
+    try:
+        saved = page_store.save_pages(pages)
+    except Exception as e:
+        return {"ok": False, "message": f"Không ghi được lên DB: {e}"}
+    return {"ok": True, "saved": saved, "loaded": reload_pages()}
 
 
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

@@ -237,6 +237,29 @@ def export_csv(pages: list, filename: str = "scraped_data.csv"):
     log(f"Đã lưu {len(pages)} trang vào {path}")
 
 
+def export_to_neon(pages: list) -> bool:
+    """
+    Đẩy kết quả scrape lên bảng scraped_pages trên Neon.
+
+    Backend đọc dữ liệu từ DB chứ không đọc file, nên đây mới là bước làm cho
+    nội dung mới thực sự có hiệu lực. Không kết nối được DB thì chỉ cảnh báo,
+    file JSON/CSV vẫn đã lưu xong nên không mất công crawl.
+    """
+    try:
+        import models
+        import page_store
+        from database import engine
+
+        models.Base.metadata.create_all(bind=engine)
+        saved = page_store.save_pages(pages)
+        log(f"Đã đẩy {saved} trang lên bảng scraped_pages trên Neon.")
+        return True
+    except Exception as e:
+        log(f"[CẢNH BÁO] Không đẩy được dữ liệu lên Neon: {e}")
+        log("Chạy lại sau, hoặc gọi POST /api/scraped-data/sync khi server đã chạy.")
+        return False
+
+
 def verify_integrity(pages: list, filename: str = "scraped_data.json") -> bool:
     path = OUTPUT_DIR / filename
     try:
@@ -267,6 +290,7 @@ def scrape_swinburne_data():
     export_json(pages)
     export_csv(pages)
     verify_integrity(pages)
+    export_to_neon(pages)
 
     total_lines = sum(len(p["content"]) for p in pages)
     log(f"HOÀN TẤT. Tổng {len(pages)} trang, {total_lines} dòng nội dung sạch.")

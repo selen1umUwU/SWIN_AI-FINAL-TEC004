@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy import Column, Integer, String, Text, DateTime, JSON
 from sqlalchemy.sql import func
 from database import Base
 
@@ -9,3 +9,12 @@ class ChatHistory(Base):
     user_message = Column(Text)
     bot_response = Column(Text)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class ScrapedPage(Base):
+    __tablename__ = "scraped_pages"
+    id = Column(Integer, primary_key=True, index=True)
+    url = Column(String, unique=True, index=True)
+    title = Column(Text)
+    content = Column(JSON)
+    scraped_at = Column(DateTime(timezone=True), server_default=func.now())

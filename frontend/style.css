@@ -503,6 +503,99 @@ section:not(.hero):not(.why-choose) {
 .card__link:hover { background: var(--swin-red); }
 [data-theme="light"] .card__link { background: #22222A; }
 
+/* ---------- CAMPUSES PAGE ---------- */
+.campuses {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 64px 24px 90px;
+}
+
+.campus-list {
+  margin-top: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.campus-card {
+  display: grid;
+  grid-template-columns: minmax(320px, 42%) 1fr;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--swin-red);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.campus-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.campus-card__media {
+  overflow: hidden;
+  min-height: 300px;
+}
+.campus-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.campus-card:hover .campus-card__media img { transform: scale(1.05); }
+
+.campus-card__body {
+  padding: 34px 38px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.campus-card__body h2 {
+  font-family: var(--font-display);
+  font-size: 27px;
+  margin-bottom: 20px;
+}
+
+.campus-info {
+  display: grid;
+  grid-template-columns: minmax(120px, auto) 1fr;
+  gap: 12px 22px;
+  font-size: 15px;
+}
+.campus-info dt {
+  color: var(--swin-red);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12.5px;
+  letter-spacing: 0.6px;
+  padding-top: 2px;
+}
+.campus-info dd { color: var(--text-secondary); }
+.campus-info dd a { color: var(--text-primary); font-weight: 600; }
+.campus-info dd a:hover { color: var(--swin-red); }
+
+.campus-note {
+  margin-top: 40px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+.campus-note a {
+  color: var(--swin-red);
+  font-weight: 600;
+  margin-left: 6px;
+}
+.campus-note a:hover { text-decoration: underline; }
+
+@media (max-width: 900px) {
+  .campus-card { grid-template-columns: 1fr; }
+  .campus-card__media { min-height: 0; aspect-ratio: 16 / 9; }
+  .campus-card__body { padding: 26px 22px; }
+  .campus-info { grid-template-columns: 1fr; gap: 4px 0; }
+  .campus-info dd { margin-bottom: 12px; }
+}
+
 /* ---------- GALLERY ---------- */
 .gallery__grid {
   margin-top: 36px;
@@ -701,10 +794,10 @@ section:not(.hero):not(.why-choose) {
 }
 
 .footer__logo {
-  height: 46px;
+  height: 92px;
   background: #fff;
-  padding: 6px 10px;
-  border-radius: 4px;
+  padding: 10px 16px;
+  border-radius: 6px;
 }
 
 .footer__col h4 {
