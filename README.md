@@ -87,5 +87,5 @@ Mỗi câu hỏi sẽ:
 
 ## Lưu ý
 
-- Đổi số hotline trong `main.py` (biến `FINAL_FALLBACK_MESSAGE`) nếu `0773 131 319` không phải số thật.
+- Đổi số hotline trong `main.py` (biến `FINAL_FALLBACK_MESSAGE`) nếu `0387 148 555` không phải số thật.
 - `MAX_PAGES_PER_QUERY`, `MAX_KB_CHARS` trong `main.py` có thể chỉnh nếu cần nhiều/ít ngữ cảnh hơn mỗi câu trả lời.

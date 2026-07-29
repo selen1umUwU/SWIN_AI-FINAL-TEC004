@@ -485,17 +485,17 @@ QUY TẮC BẮT BUỘC:
    hoặc không hề có, và dữ liệu tham khảo không nhắc gì tới nó dù chỉ chung chung) — lúc
    đó đừng bịa thông tin, hãy trả lời bằng ĐÚNG NGUYÊN VĂN câu sau, không thêm bớt:
    "Hiện tại, trường chưa có đủ thông tin chi tiết. Bạn có thể liên hệ hotline số
-   0773 131 319 để biết thêm chi tiết."
+   0387 148 555 để biết thêm chi tiết."
    NGƯỢC LẠI, nếu dữ liệu tham khảo CÓ đề cập thông tin chung liên quan đến chủ đề hỏi
    (dù không có con số/chi tiết cụ thể tuyệt đối chính xác), hãy trả lời bằng thông tin
-   chung đó và khuyến khích liên hệ hotline 0773 131 319 hoặc website chính thức để biết
+   chung đó và khuyến khích liên hệ hotline 0387 148 555 hoặc website chính thức để biết
    thêm chi tiết cụ thể — KHÔNG dùng câu fallback cố định ở trên cho trường hợp này.
 5. NGÔN NGỮ: Trả lời bằng tiếng Việt, giọng thân thiện, chuyên nghiệp.
 """
 
 # Câu trả lời cuối cùng khi CẢ 3 API đều lỗi — chỉnh số hotline theo ý bạn.
 FINAL_FALLBACK_MESSAGE = (
-    "Hiện tại máy chủ đang bận, vui lòng gọi điện hotline 0773 131 319 "
+    "Hiện tại máy chủ đang bận, vui lòng gọi điện hotline 0387 148 555 "
     "hoặc thử lại sau ít phút để được hỗ trợ tư vấn tuyển sinh."
 )
 
