@@ -701,6 +701,22 @@ section:not(.hero):not(.why-choose) {
   display: inline-block;
 }
 
+/* Nhãn cho biết câu trả lời vừa rồi do API nào sinh ra — để thấy được
+   cơ chế failover khi demo mà không cần mở log server. */
+.chat-panel__provider {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.chat-panel__provider[data-provider="openrouter"] { background: #E8912D; }
+.chat-panel__provider[data-provider="none"] { background: #444; }
+
 .chat-panel__close { color: #fff; font-size: 16px; opacity: 0.85; }
 .chat-panel__close:hover { opacity: 1; }
 
@@ -849,9 +865,13 @@ section:not(.hero):not(.why-choose) {
 }
 
 @media (max-width: 640px) {
+  /* Neo vào chính navbar (position: sticky nên nó là mốc định vị), KHÔNG dùng
+     toạ độ cứng: chiều cao navbar đổi theo cỡ logo, và vị trí navbar trên màn
+     hình cũng đổi khi utility bar cuộn đi mất. top: 100% luôn bám đúng mép dưới
+     navbar trong mọi trường hợp. */
   .nav-links {
-    position: fixed;
-    top: 62px;
+    position: absolute;
+    top: 100%;
     left: 0;
     right: 0;
     background: var(--bg-elevated);
@@ -861,9 +881,16 @@ section:not(.hero):not(.why-choose) {
     gap: 0;
     padding: 8px 24px;
     transform: translateY(-120%);
-    transition: transform var(--transition);
+    /* visibility để menu đóng không Tab vào được và không loé qua navbar lúc
+       trượt; 0s trễ đúng bằng thời gian transform nên chỉ ẩn sau khi trượt xong. */
+    visibility: hidden;
+    transition: transform var(--transition), visibility 0s linear 0.25s;
   }
-  .nav-links.open { transform: translateY(0); }
+  .nav-links.open {
+    transform: translateY(0);
+    visibility: visible;
+    transition: transform var(--transition), visibility 0s;
+  }
   .nav-links a { width: 100%; padding: 14px 0; border-bottom: 1px solid var(--border); }
   .nav-links a:last-child { border-bottom: none; }
   .nav-cta { text-align: center; margin: 10px 0; }

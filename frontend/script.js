@@ -192,9 +192,17 @@ function initLanguage() {
 }
 
 function applyLanguage(lang) {
+  const changed = TRANSLATIONS[lang] && lang !== currentLang;
   currentLang = TRANSLATIONS[lang] ? lang : "vi";
   localStorage.setItem("swin-lang", currentLang);
   document.documentElement.setAttribute("lang", t("html.lang"));
+
+  // Card ngành học lấy nội dung từ dữ liệu scrape nên phải dựng lại theo ngôn
+  // ngữ mới. Chỉ làm khi ngôn ngữ THỰC SỰ đổi, vì renderSection() gọi ngược lại
+  // applyLanguage() -> không chặn thì thành đệ quy vô hạn.
+  if (changed) {
+    Object.keys(sectionCache).forEach(renderSection);
+  }
 
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     el.textContent = t(el.dataset.i18n);
@@ -236,6 +244,52 @@ function initDynamicSections() {
   fillSectionFromApi("scholarships", "scholarshipsGrid", { keepMedia: false });
 }
 
+/* Dữ liệu đã tải về được giữ lại để khi đổi ngôn ngữ thì dựng lại card ngay,
+   không phải gọi API lần nữa. */
+const sectionCache = {};
+
+/* Bản tiếng Anh cho các ngành học.
+   Website trường chỉ có nội dung ngành học bằng tiếng Việt (trang /en/ không có
+   phần này), nên phần chữ dưới đây do dự án tự soạn, không phải lấy từ web.
+   Khoá tra cứu là tên tiếng Anh nằm trong ngoặc của chính tiêu đề scrape được
+   ("Kinh doanh (Business)" -> "business"), nhờ vậy trường có sửa cách viết
+   tiếng Việt thì vẫn khớp. */
+const PROGRAM_EN = {
+  "global citizen": {
+    title: "Global Citizen",
+    desc: "Welcome to the Global Citizenship Education Program at Swinburne Vietnam — where your journey to becoming a global citizen begins.",
+  },
+  "computer science": {
+    title: "Computer Science",
+    desc: "In the age of Industry 4.0, information technology has become one of the most sought-after careers. Swinburne Vietnam trains students in software development, data science, IoT, artificial intelligence and cyber security.",
+  },
+  "business": {
+    title: "Business",
+    desc: "Technology is reshaping how businesses operate. Students learn to apply new business models and technologies across marketing, finance, international business, business analytics and supply chain management.",
+  },
+  "design": {
+    title: "Design",
+    desc: "Design is not only about beauty — it shapes how we perceive, understand and experience the world. The Bachelor of Design builds your foundation in communication design and creative thinking.",
+  },
+  "media & communication": {
+    title: "Media & Communication",
+    desc: "We live in a world more connected than ever, with communication at the centre of it all. Study advertising, social media and public relations for the digital age.",
+  },
+};
+
+/** Lấy khoá tra cứu từ tiêu đề: phần trong ngoặc cuối cùng, hoặc cả tiêu đề. */
+function programKey(title) {
+  const inParens = title.match(/\(([^)]+)\)\s*$/);
+  return (inParens ? inParens[1] : title).trim().toLowerCase();
+}
+
+/** Đổi 1 mục sang tiếng Anh nếu có bản dịch; không có thì giữ nguyên tiếng Việt. */
+function translateItem(topic, item) {
+  if (currentLang !== "en" || topic !== "programs") return item;
+  const en = PROGRAM_EN[programKey(item.title || "")];
+  return en ? { ...item, title: en.title, desc: en.desc } : item;
+}
+
 async function fillSectionFromApi(topic, gridId, { keepMedia }) {
   const grid = document.getElementById(gridId);
   if (!grid) return;
@@ -246,25 +300,36 @@ async function fillSectionFromApi(topic, gridId, { keepMedia }) {
     const items = (data.items || []).filter((it) => it.title || it.desc);
     if (items.length === 0) return;
 
-    if (keepMedia) {
-      updateMediaCards(grid, items);
-    } else {
-      renderTextCards(grid, items);
-    }
-
-    if (data.url) {
-      const note = document.createElement("p");
-      note.className = "section__source";
-      note.dataset.url = data.url;
-      renderSourceNote(note);
-      grid.appendChild(note);
-    }
-
-    applyLanguage(currentLang);
+    sectionCache[topic] = { gridId, keepMedia, items, url: data.url };
+    renderSection(topic);
   } catch (err) {
     console.error(`Không tải được nội dung động cho '${topic}':`, err);
-
   }
+}
+
+function renderSection(topic) {
+  const cached = sectionCache[topic];
+  if (!cached) return;
+  const grid = document.getElementById(cached.gridId);
+  if (!grid) return;
+
+  const items = cached.items.map((item) => translateItem(topic, item));
+
+  if (cached.keepMedia) {
+    updateMediaCards(grid, items);
+  } else {
+    renderTextCards(grid, items);
+  }
+
+  if (cached.url) {
+    const note = document.createElement("p");
+    note.className = "section__source";
+    note.dataset.url = cached.url;
+    renderSourceNote(note);
+    grid.appendChild(note);
+  }
+
+  applyLanguage(currentLang);
 }
 
 function updateMediaCards(grid, items) {
@@ -361,6 +426,7 @@ function initChatWidget() {
   const input = document.getElementById("chatInput");
   const messages = document.getElementById("chatMessages");
   const suggestions = document.getElementById("chatSuggestions");
+  const providerTag = document.getElementById("chatProvider");
 
   if (!fab || !panel || !form || !input || !messages || !suggestions) return;
 
@@ -409,12 +475,26 @@ function initChatWidget() {
     const typingBubble = addMessage(t("chat.typing"), "bot");
 
     try {
-      const answer = await fetchAIReply(question);
+      const { answer, provider } = await fetchAIReply(question);
       typingBubble.querySelector("p").innerHTML = marked.parse(answer);
+      showProvider(provider);
     } catch (err) {
       typingBubble.querySelector("p").textContent = t("chat.error");
       console.error("Chat error:", err);
     }
+  }
+
+  const PROVIDER_LABELS = {
+    gemini: "Gemini",
+    openrouter: "OpenRouter (dự phòng)",
+    none: "Ngoại tuyến",
+  };
+
+  function showProvider(provider) {
+    if (!providerTag || !provider) return;
+    providerTag.textContent = PROVIDER_LABELS[provider] || provider;
+    providerTag.dataset.provider = provider;
+    providerTag.hidden = false;
   }
 
   async function fetchAIReply(question) {
@@ -427,7 +507,7 @@ function initChatWidget() {
       throw new Error(`Server trả về lỗi ${res.status}`);
     }
     const data = await res.json();
-    return data.answer;
+    return { answer: data.answer, provider: data.provider };
   }
 }
 
